@@ -79,6 +79,12 @@ class Config
         return max(1, (int) $this->value('general/valid_days', $store));
     }
 
+    /** Days before expiry for the reminder e-mail (0 = no reminder). */
+    public function getReminderDays($store = null): int
+    {
+        return max(0, (int) $this->value('general/reminder_days', $store));
+    }
+
     public function getNumberPrefix(): string
     {
         return (string) $this->scopeConfig->getValue(self::XML . 'general/number_prefix');

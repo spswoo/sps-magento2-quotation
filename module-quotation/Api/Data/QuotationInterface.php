@@ -44,6 +44,7 @@ interface QuotationInterface
     public const CREATED_AT = 'created_at';
     public const UPDATED_AT = 'updated_at';
     public const SENT_AT = 'sent_at';
+    public const REMINDER_SENT_AT = 'reminder_sent_at';
 
     /** Status values */
     public const STATUS_REQUESTED = 'requested';

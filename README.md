@@ -3,8 +3,8 @@
 Quotations for stores that sell items whose shipping (or price) has to be quoted by staff — furniture, freight,
 bulky equipment.
 
-> **Status: in development.** Quote-required products, quotation requests, admin quotations and e-mails are
-> functional; pay-by-link checkout is being built — see [Roadmap](#roadmap).
+> **Status: in development.** All v1 features are implemented; tests, CI and documentation are being completed —
+> see [Roadmap](#roadmap).
 
 ## Features
 
@@ -72,7 +72,7 @@ bin/magento module:uninstall --remove-data SPS_QuotationHyvaCheckout SPS_Quotati
 
 1. Quote-required products (done)
 2. Quotation requests, admin quotations, e-mails (done)
-3. Pay-by-link checkout, freight carrier, quote-is-final rules, Hyvä Checkout notices
+3. Pay-by-link checkout, freight carrier, quote-is-final rules, Hyvä Checkout notices (done)
 4. Tests and CI (install → disable → uninstall on a fresh Mage-OS), translations, documentation
 
 ## Contributing

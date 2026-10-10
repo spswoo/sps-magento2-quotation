@@ -14,6 +14,11 @@
                     <argument name="context" xsi:type="string">cart</argument>
                 </arguments>
             </block>
+            <block name="sps.quotation.cart.notice" template="SPS_QuotationHyva::quotation/notice.phtml">
+                <arguments>
+                    <argument name="context" xsi:type="string">cart</argument>
+                </arguments>
+            </block>
         </referenceContainer>
     </body>
 </page>

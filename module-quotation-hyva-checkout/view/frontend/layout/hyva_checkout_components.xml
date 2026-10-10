@@ -14,6 +14,12 @@
                     <argument name="context" xsi:type="string">checkout</argument>
                 </arguments>
             </block>
+            <!-- carts built from a quotation: what is quoted + warning when the address is outside the quoted destination -->
+            <block name="sps.quotation.checkout.notice" template="SPS_QuotationHyva::quotation/notice.phtml">
+                <arguments>
+                    <argument name="context" xsi:type="string">checkout</argument>
+                </arguments>
+            </block>
         </referenceContainer>
     </body>
 </page>

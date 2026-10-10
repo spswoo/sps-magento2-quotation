@@ -1,0 +1,33 @@
+<!--@subject {{trans "Reminder: your quotation %number expires on %date" number=$quotation_number date=$expires}} @-->
+<!--@vars {
+"var quotation_number":"Quotation number",
+"var customer_name":"Customer name",
+"var destination":"Destination",
+"var subtotal":"Subtotal",
+"var freight_label":"Freight label",
+"var freight":"Freight",
+"var tax":"Estimated tax",
+"var grand_total":"Estimated total",
+"var expires":"Valid until",
+"var checkout_url":"Checkout link",
+"layout handle=\"sps_quotation_email_items\" quotation=$quotation":"Items"
+} @-->
+{{template config_path="design/email/header_template"}}
+
+<p class="greeting">{{trans "Hello %name," name=$customer_name}}</p>
+<p>{{trans "A reminder that your quotation %number is reserved for you until %date. Use the button below to review and pay — this link replaces the one in our earlier e-mail." number=$quotation_number date=$expires}}</p>
+{{layout handle="sps_quotation_email_items" quotation=$quotation area="frontend"}}
+<table class="sps-quotation-totals" style="margin: 0 0 20px auto;">
+    <tr><td style="padding-right: 16px;">{{trans "Subtotal"}}</td><td align="right">{{var subtotal}}</td></tr>
+    <tr><td style="padding-right: 16px;">{{var freight_label}} ({{var destination}})</td><td align="right">{{var freight}}</td></tr>
+    <tr><td style="padding-right: 16px;">{{trans "Estimated tax"}}</td><td align="right">{{var tax}}</td></tr>
+    <tr><td style="padding-right: 16px;"><strong>{{trans "Estimated total"}}</strong></td><td align="right"><strong>{{var grand_total}}</strong></td></tr>
+</table>
+<table class="button" width="100%" cellpadding="0" cellspacing="0" border="0">
+    <tr><td><table class="inner-wrapper" border="0" cellspacing="0" cellpadding="0" align="center"><tr><td align="center">
+        <a href="{{var checkout_url}}" target="_blank">{{trans "Review and pay"}}</a>
+    </td></tr></table></td></tr>
+</table>
+<p style="font-size: 12px;">{{trans "The link opens our checkout with the quoted prices and freight; no account is needed. Tax is calculated for the address you enter at checkout."}}</p>
+
+{{template config_path="design/email/footer_template"}}

@@ -1,0 +1,39 @@
+<?php
+/**
+ * Copyright © SPS. All rights reserved.
+ * Licensed under the Open Software License version 3.0 (OSL-3.0), see LICENSE.txt.
+ *
+ * Shown when a quotation checkout link cannot be used. Theme-agnostic markup.
+ *
+ * @var \Magento\Framework\View\Element\Template $block
+ * @var \Magento\Framework\Escaper $escaper
+ */
+/** @var \SPS\Quotation\ViewModel\StoreContact $contact */
+$contact = $block->getData('view_model');
+$number = (string) $block->getData('quotation_number');
+$messages = [
+    'invalid' => __('This quotation link is not valid. It may have been replaced by a newer e-mail.'),
+    'ordered' => __('Quotation %1 has already been ordered — thank you!', $number),
+    'cancelled' => __('Quotation %1 is no longer available.', $number),
+    'expired' => __('Quotation %1 has expired. Prices and freight can change, so please ask us for an updated quotation.', $number),
+    'item' => __('Quotation %1 cannot be opened right now.', $number),
+    'error' => __('Sorry, quotation %1 could not be opened. Please try again later or contact us.', $number),
+];
+$message = $messages[(string) $block->getData('reason')] ?? $messages['invalid'];
+?>
+<div class="sps-quotation-unavailable">
+    <h1><?= $escaper->escapeHtml(__('Quotation')) ?></h1>
+    <p><?= $escaper->escapeHtml($message) ?></p>
+    <?php if ($block->getData('detail')): ?>
+        <p><?= $escaper->escapeHtml($block->getData('detail')) ?></p>
+    <?php endif; ?>
+    <p>
+        <?= $escaper->escapeHtml(__('Questions? Contact us:')) ?>
+        <?php if ($contact->getPhone() !== ''): ?>
+            <a href="tel:<?= $escaper->escapeHtmlAttr(preg_replace('/[^0-9+]/', '', $contact->getPhone())) ?>"><?= $escaper->escapeHtml($contact->getPhone()) ?></a>
+        <?php endif; ?>
+        <?php if ($contact->getEmail() !== ''): ?>
+            · <a href="mailto:<?= $escaper->escapeHtmlAttr($contact->getEmail()) ?>"><?= $escaper->escapeHtml($contact->getEmail()) ?></a>
+        <?php endif; ?>
+    </p>
+</div>

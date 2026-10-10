@@ -1,0 +1,19 @@
+<?xml version="1.0"?>
+<!--
+/**
+ * Copyright © SPS. All rights reserved.
+ * Licensed under the Open Software License version 3.0 (OSL-3.0), see LICENSE.txt.
+ */
+-->
+<page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
+    <body>
+        <referenceBlock name="order_additional_info">
+            <block class="Magento\Backend\Block\Template" name="sps_quotation_order_info"
+                   template="SPS_Quotation::order/quotation.phtml" aclResource="SPS_Quotation::quotations">
+                <arguments>
+                    <argument name="view_model" xsi:type="object">SPS\Quotation\ViewModel\Adminhtml\OrderQuotation</argument>
+                </arguments>
+            </block>
+        </referenceBlock>
+    </body>
+</page>

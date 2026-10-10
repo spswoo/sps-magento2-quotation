@@ -59,12 +59,15 @@ class EmailSender
      *
      * @throws \Magento\Framework\Exception\LocalizedException
      */
-    public function sendQuotation(QuotationInterface $quotation, string $checkoutUrl): void
-    {
+    public function sendQuotation(
+        QuotationInterface $quotation,
+        string $checkoutUrl,
+        string $templateField = 'quotation_template'
+    ): void {
         $storeId = (int) $quotation->getStoreId();
         $vars = $this->vars($quotation) + ['checkout_url' => $checkoutUrl];
         if (!$this->send(
-            'quotation_template',
+            $templateField,
             $storeId,
             (string) $quotation->getCustomerEmail(),
             $quotation->getCustomerName(),

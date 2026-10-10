@@ -84,6 +84,8 @@ class FormHandler
 
         $quotation->setItems($this->buildItems($items, (int) $store->getId()));
         $this->totals->collect($quotation);
+        // a cart built before this change holds the old prices: the next visit to the link builds a new one
+        $quotation->setData(Q::QUOTE_ID, null);
     }
 
     /**

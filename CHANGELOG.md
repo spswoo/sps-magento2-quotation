@@ -20,4 +20,15 @@ All notable changes to this project are documented here. The format follows
 - Settings: Stores > Configuration > Sales > Quotations, incl. an "Only for developer IPs" mode for testing on a
   live store (separate full-page-cache variant for those visitors).
 - `module:uninstall --remove-data` removes the tables, settings, customised e-mail templates and the attribute.
+- Pay-by-link checkout: "Review and pay" link (`sps_quotation/checkout/open`) builds a cart with the quoted items,
+  custom options and prices, destination pre-filled and the quoted freight selected (guest or logged-in customer;
+  re-opening re-uses the cart); explanation page for invalid / expired / cancelled / ordered links.
+- Freight carrier `spsquotation`: one rate (quoted label + amount) only for quotation carts and only for the quoted
+  country + postal code; other carriers are not offered for quotation carts.
+- "The quote is final": no cart price rules, free shipping or coupons on quotation carts; adding other products
+  is refused; an order-placement guard (before payment) refuses carts that no longer match the quotation.
+- Order placed → quotation "ordered" + linked; admin order view shows the quotation.
+- Daily cron: expired quotations; optional expiry reminder with a fresh link (default 3 days before).
+- State / province on the request form (required where the country requires one) → better tax estimate.
+- `QuotationCartResolver::isQuotationCart()` public service for other modules.
 - `SPS_QuotationHyvaCheckout`: shipping-step notice for Hyvä Checkout (it hides shipping methods that return an error).

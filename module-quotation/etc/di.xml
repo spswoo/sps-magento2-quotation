@@ -39,6 +39,22 @@
 
     <!-- global: storefront, REST/GraphQL and admin-created orders follow the same rule -->
     <type name="Magento\Shipping\Model\Shipping">
-        <plugin name="sps_quotation_quote_required_carriers" type="SPS\Quotation\Plugin\Shipping\FilterCarriersForQuoteRequired"/>
+        <!-- quotation carts: only the quoted freight (runs first) -->
+        <plugin name="sps_quotation_quotation_carriers" type="SPS\Quotation\Plugin\Shipping\QuotationCarriers" sortOrder="10"/>
+        <plugin name="sps_quotation_quote_required_carriers" type="SPS\Quotation\Plugin\Shipping\FilterCarriersForQuoteRequired" sortOrder="20"/>
+    </type>
+
+    <!-- "the quote is final": no cart price rules, free shipping or coupons on quotation carts -->
+    <type name="Magento\SalesRule\Model\Validator">
+        <plugin name="sps_quotation_skip_rules" type="SPS\Quotation\Plugin\SalesRule\SkipRulesForQuotation"/>
+    </type>
+    <type name="Magento\OfflineShipping\Model\Quote\Address\FreeShipping">
+        <plugin name="sps_quotation_no_free_shipping" type="SPS\Quotation\Plugin\SalesRule\NoFreeShippingForQuotation"/>
+    </type>
+    <type name="Magento\Quote\Api\CouponManagementInterface">
+        <plugin name="sps_quotation_block_coupon" type="SPS\Quotation\Plugin\Quote\BlockCouponForQuotation"/>
+    </type>
+    <type name="Magento\Quote\Model\Quote">
+        <plugin name="sps_quotation_block_add_product" type="SPS\Quotation\Plugin\Quote\BlockAddProductForQuotation"/>
     </type>
 </config>

@@ -79,6 +79,10 @@ $field = static fn(string $name): string => 'quotation[' . $name . ']';
             <?php if ($vm->get(Q::SENT_AT)): ?>
                 <span><strong><?= $e->escapeHtml(__('Last sent')) ?></strong><?= $e->escapeHtml($vm->get(Q::SENT_AT)) ?></span>
             <?php endif; ?>
+            <?php if ($quotation->getData(Q::ORDER_ID)): ?>
+                <span><strong><?= $e->escapeHtml(__('Order')) ?></strong>
+                    <a href="<?= $e->escapeUrl($vm->url('sales/order/view', ['order_id' => (int) $quotation->getData(Q::ORDER_ID)])) ?>"><?= $e->escapeHtml(__('View order')) ?></a></span>
+            <?php endif; ?>
             <?php if ($quotation->getCustomerId()): ?>
                 <span><strong><?= $e->escapeHtml(__('Customer account')) ?></strong>
                     <a href="<?= $e->escapeUrl($vm->url('customer/index/edit', ['id' => $quotation->getCustomerId()])) ?>">#<?= (int) $quotation->getCustomerId() ?></a></span>

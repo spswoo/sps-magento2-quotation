@@ -8,7 +8,9 @@ declare(strict_types=1);
 namespace SPS\Quotation\Model;
 
 use Magento\Catalog\Model\Product;
+use Magento\Directory\Helper\Data as DirectoryHelper;
 use Magento\Directory\Model\AllowedCountries;
+use Magento\Directory\Model\RegionFactory;
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Store\Model\ScopeInterface;
 use SPS\Quotation\Api\Data\QuotationInterface;
@@ -30,7 +32,9 @@ class RequestService
         private readonly TotalsCalculator $totals,
         private readonly EmailSender $emailSender,
         private readonly Checker $checker,
-        private readonly AllowedCountries $allowedCountries
+        private readonly AllowedCountries $allowedCountries,
+        private readonly DirectoryHelper $directoryHelper,
+        private readonly RegionFactory $regionFactory
     ) {
     }
 
@@ -62,6 +66,7 @@ class RequestService
         if (!in_array($country, $allowed, true)) {
             throw new LocalizedException(__('Please choose a country we ship to.'));
         }
+        [$regionId, $regionName] = $this->region($country, (int) ($input['region_id'] ?? 0), $field('region'));
         $qty = (int) ($input['qty'] ?? 1);
         if ($qty < 1 || $qty > self::MAX_QTY) {
             throw new LocalizedException(__('Please enter a quantity between 1 and %1.', self::MAX_QTY));
@@ -79,6 +84,8 @@ class RequestService
             QuotationInterface::CUSTOMER_PHONE => $field('phone', 64),
             QuotationInterface::CUSTOMER_COMPANY => $field('company') ?: null,
             QuotationInterface::DEST_COUNTRY_ID => $country,
+            QuotationInterface::DEST_REGION_ID => $regionId,
+            QuotationInterface::DEST_REGION => $regionName,
             QuotationInterface::DEST_POSTCODE => strtoupper($field('postcode', 20)),
             QuotationInterface::DEST_CITY => $field('city') ?: null,
             QuotationInterface::CUSTOMER_MESSAGE => $field('message', 2000) ?: null,
@@ -102,5 +109,25 @@ class RequestService
         $this->repository->save($quotation);
         $this->emailSender->sendRequestNotifications($quotation);
         return $quotation;
+    }
+
+    /**
+     * State/province: a region of the country (by ID) where the country has a list, free text otherwise.
+     *
+     * @return array{0: int|null, 1: string|null}
+     * @throws LocalizedException
+     */
+    private function region(string $country, int $regionId, string $regionText): array
+    {
+        if ($regionId) {
+            $region = $this->regionFactory->create()->load($regionId);
+            if ($region->getId() && $region->getCountryId() === $country) {
+                return [(int) $region->getId(), (string) ($region->getName() ?: $region->getDefaultName())];
+            }
+        }
+        if (in_array($country, $this->directoryHelper->getCountriesWithStatesRequired(), true)) {
+            throw new LocalizedException(__('Please choose your state / province.'));
+        }
+        return [null, $regionText !== '' ? $regionText : null];
     }
 }

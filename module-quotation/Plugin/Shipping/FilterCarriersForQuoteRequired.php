@@ -9,6 +9,7 @@ namespace SPS\Quotation\Plugin\Shipping;
 
 use Magento\Quote\Model\Quote\Address\RateRequest;
 use Magento\Shipping\Model\Shipping;
+use SPS\Quotation\Model\Carrier\QuotationFreight;
 use SPS\Quotation\Model\Carrier\QuoteRequired;
 use SPS\Quotation\Model\QuoteRequired\Checker;
 
@@ -29,6 +30,7 @@ class FilterCarriersForQuoteRequired
     public function aroundCollectCarrierRates(Shipping $subject, callable $proceed, $carrierCode, $request)
     {
         if ($carrierCode === QuoteRequired::CODE
+            || $carrierCode === QuotationFreight::CODE       // only rates for quotation carts, which are already quoted
             || !$request instanceof RateRequest
             || !$this->checker->isEnabled($request->getStoreId())
             || in_array($carrierCode, $this->checker->getAllowedCarriers($request->getStoreId()), true)

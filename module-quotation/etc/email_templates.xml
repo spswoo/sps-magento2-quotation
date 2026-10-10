@@ -9,4 +9,5 @@
     <template id="sps_quotation_email_request_staff_template" label="Quotation request (to staff)" file="request_staff.html" type="html" module="SPS_Quotation" area="frontend"/>
     <template id="sps_quotation_email_request_customer_template" label="Quotation request received (to customer)" file="request_customer.html" type="html" module="SPS_Quotation" area="frontend"/>
     <template id="sps_quotation_email_quotation_template" label="Your quotation (to customer)" file="quotation.html" type="html" module="SPS_Quotation" area="frontend"/>
+    <template id="sps_quotation_email_reminder_template" label="Quotation expiry reminder (to customer)" file="reminder.html" type="html" module="SPS_Quotation" area="frontend"/>
 </config>

@@ -68,12 +68,15 @@ $defaultCountry = $form->getDefaultCountry();
                     <label class="block text-sm sm:col-span-2"><?= $escaper->escapeHtml(__('Company (optional)')) ?>
                         <input class="form-input w-full" name="company" autocomplete="organization"></label>
                     <label class="block text-sm"><?= $escaper->escapeHtml(__('Ship to country')) ?> *
-                        <select class="form-select w-full" name="country_id" autocomplete="country" required>
+                        <select class="form-select w-full" name="country_id" autocomplete="country" required x-ref="country" @change="countryChanged">
                             <?php foreach ($form->getCountries() as $country): ?>
                                 <option value="<?= $escaper->escapeHtmlAttr($country['value']) ?>"
                                     <?= $country['value'] === $defaultCountry ? 'selected' : '' ?>><?= $escaper->escapeHtml($country['label']) ?></option>
                             <?php endforeach; ?>
                         </select></label>
+                    <label class="block text-sm"><?= $escaper->escapeHtml(__('State / Province')) ?><span x-show="isRegionRequired"> *</span>
+                        <select class="form-select w-full" name="region_id" x-ref="regionSelect" autocomplete="address-level1"></select>
+                        <input class="form-input w-full" name="region" x-ref="regionText" autocomplete="address-level1" hidden></label>
                     <label class="block text-sm"><?= $escaper->escapeHtml(__('Postal / ZIP code')) ?> *
                         <input class="form-input w-full" name="postcode" autocomplete="postal-code" required></label>
                     <label class="block text-sm"><?= $escaper->escapeHtml(__('City')) ?>
@@ -96,12 +99,48 @@ $defaultCountry = $form->getDefaultCountry();
 <script>
     (() => {
         const failed = <?= /* @noEscape */ json_encode((string) __('Sorry, your request could not be sent. Please contact us directly.'), JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) ?>;
+        const regionData = <?= /* @noEscape */ $form->getRegionsJson() ?>;
+        const chooseRegion = <?= /* @noEscape */ json_encode((string) __('Please select'), JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) ?>;
         const incomplete = <?= /* @noEscape */ json_encode((string) __('Please fill in all required fields.'), JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) ?>;
 
         function spsQuotationRequest() {
             return {
                 state: 'form',
                 message: '',
+                regionRequired: false,
+                get isRegionRequired() { return this.regionRequired; },
+                init() {
+                    this.countryChanged();
+                },
+                countryChanged() {
+                    const country = this.$refs.country.value;
+                    const regions = regionData[country] || {};
+                    const select = this.$refs.regionSelect;
+                    const text = this.$refs.regionText;
+                    this.regionRequired = ((regionData.config || {}).regions_required || []).includes(country);
+                    select.innerHTML = '';
+                    const ids = Object.keys(regions);
+                    if (!ids.length) {
+                        select.hidden = true;
+                        select.required = false;
+                        text.hidden = false;
+                        return;
+                    }
+                    const empty = document.createElement('option');
+                    empty.value = '';
+                    empty.textContent = chooseRegion;
+                    select.appendChild(empty);
+                    ids.sort((a, b) => regions[a].name.localeCompare(regions[b].name)).forEach((id) => {
+                        const option = document.createElement('option');
+                        option.value = id;
+                        option.textContent = regions[id].name;
+                        select.appendChild(option);
+                    });
+                    select.hidden = false;
+                    select.required = this.regionRequired;
+                    text.hidden = true;
+                    text.value = '';
+                },
                 get isDone() { return this.state === 'done'; },
                 get isOpenForm() { return this.state !== 'done'; },
                 get isSubmitting() { return this.state === 'sending'; },
@@ -153,6 +192,7 @@ $defaultCountry = $form->getDefaultCountry();
                         this.state = result.success ? 'done' : 'error';
                         if (result.success) {
                             form.reset();
+                            this.countryChanged();
                         }
                     } catch (e) {
                         this.message = failed;

@@ -11,6 +11,7 @@ use Magento\Catalog\Model\Product;
 use Magento\Checkout\Model\Session as CheckoutSession;
 use Magento\Framework\Escaper;
 use Magento\Framework\View\Element\Block\ArgumentInterface;
+use SPS\Quotation\Model\QuotationCartResolver;
 use SPS\Quotation\Model\QuoteRequired\Checker;
 
 /**
@@ -23,7 +24,8 @@ class QuoteRequiredNotice implements ArgumentInterface
     public function __construct(
         private readonly Checker $checker,
         private readonly CheckoutSession $checkoutSession,
-        private readonly Escaper $escaper
+        private readonly Escaper $escaper,
+        private readonly QuotationCartResolver $resolver
     ) {
     }
 
@@ -53,7 +55,11 @@ class QuoteRequiredNotice implements ArgumentInterface
         if (!$this->checker->isEnabled()) {
             return '';
         }
-        $names = $this->checker->getFlaggedItemNames($this->checkoutSession->getQuote()->getAllItems());
+        $quote = $this->checkoutSession->getQuote();
+        if ($this->resolver->isQuotationCart($quote)) {
+            return '';                                   // already quoted: no "contact us for a quote" message
+        }
+        $names = $this->checker->getFlaggedItemNames($quote->getAllItems());
         return $names ? $this->linkify($this->checker->getMessage($field, $names), $linkClass) : '';
     }
 

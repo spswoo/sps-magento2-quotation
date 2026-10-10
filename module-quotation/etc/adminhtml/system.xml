@@ -23,6 +23,11 @@
                     <comment>Default expiry for new quotations; can be changed per quotation.</comment>
                     <validate>required-entry validate-digits validate-greater-than-zero</validate>
                 </field>
+                <field id="reminder_days" translate="label comment" type="text" sortOrder="25" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Expiry Reminder (Days Before)</label>
+                    <comment>One reminder e-mail with a fresh checkout link; 0 = no reminder.</comment>
+                    <validate>validate-digits</validate>
+                </field>
                 <field id="freight_label" translate="label" type="text" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="1">
                     <label>Default Freight Label</label>
                 </field>
@@ -73,6 +78,10 @@
                 </field>
                 <field id="quotation_template" translate="label" type="select" sortOrder="60" showInDefault="1" showInWebsite="1" showInStore="1">
                     <label>Quotation Template (Customer)</label>
+                    <source_model>Magento\Config\Model\Config\Source\Email\Template</source_model>
+                </field>
+                <field id="reminder_template" translate="label" type="select" sortOrder="70" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Expiry Reminder Template (Customer)</label>
                     <source_model>Magento\Config\Model\Config\Source\Email\Template</source_model>
                 </field>
             </group>

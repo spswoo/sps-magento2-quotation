@@ -1,0 +1,25 @@
+<?php
+/**
+ * Copyright © SPS. All rights reserved.
+ * Licensed under the Open Software License version 3.0 (OSL-3.0), see LICENSE.txt.
+ *
+ * @var \Magento\Backend\Block\Template $block
+ * @var \Magento\Framework\Escaper $escaper
+ */
+/** @var \SPS\Quotation\ViewModel\Adminhtml\OrderQuotation $vm */
+$vm = $block->getData('view_model');
+$quotation = $vm->getQuotation();
+if (!$quotation) {
+    return;
+}
+?>
+<section class="admin__page-section">
+    <div class="admin__page-section-title"><span class="title"><?= $escaper->escapeHtml(__('Quotation')) ?></span></div>
+    <div class="admin__page-section-content">
+        <p>
+            <?= $escaper->escapeHtml(__('Placed from quotation')) ?>
+            <a href="<?= $escaper->escapeUrl($vm->getEditUrl($quotation)) ?>"><?= $escaper->escapeHtml($quotation->getIncrementId()) ?></a>
+            — <?= $escaper->escapeHtml(__('quoted prices and freight; no cart rules or coupons applied.')) ?>
+        </p>
+    </div>
+</section>

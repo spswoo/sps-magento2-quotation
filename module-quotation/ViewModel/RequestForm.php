@@ -8,6 +8,7 @@ declare(strict_types=1);
 namespace SPS\Quotation\ViewModel;
 
 use Magento\Catalog\Model\Product;
+use Magento\Directory\Helper\Data as DirectoryHelper;
 use Magento\Directory\Model\ResourceModel\Country\CollectionFactory as CountryCollectionFactory;
 use Magento\Framework\App\Config\ScopeConfigInterface;
 use Magento\Framework\UrlInterface;
@@ -27,7 +28,8 @@ class RequestForm implements ArgumentInterface
         private readonly Checker $checker,
         private readonly UrlInterface $url,
         private readonly CountryCollectionFactory $countryCollectionFactory,
-        private readonly ScopeConfigInterface $scopeConfig
+        private readonly ScopeConfigInterface $scopeConfig,
+        private readonly DirectoryHelper $directoryHelper
     ) {
     }
 
@@ -54,6 +56,18 @@ class RequestForm implements ArgumentInterface
             static fn(array $o): array => ['value' => (string) $o['value'], 'label' => (string) $o['label']],
             array_filter($options, static fn(array $o): bool => (string) $o['value'] !== '')
         ));
+    }
+
+    /**
+     * Regions per country + the countries that require one, as JSON for the form script
+     * ({"config": {"regions_required": [...]}, "CA": {"<id>": {"code": "ON", "name": "Ontario"}}, ...}).
+     */
+    public function getRegionsJson(): string
+    {
+        return (string) json_encode(
+            $this->directoryHelper->getRegionData(),
+            JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT
+        );
     }
 
     public function getDefaultCountry(): string

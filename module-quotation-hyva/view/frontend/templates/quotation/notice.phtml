@@ -1,0 +1,38 @@
+<?php
+/**
+ * Copyright © SPS. All rights reserved.
+ * Licensed under the Open Software License version 3.0 (OSL-3.0), see LICENSE.txt.
+ *
+ * "This cart is quotation Q…" — cart page (context "cart") and Hyvä Checkout shipping step (context "checkout",
+ * also explains when the entered address is outside the quoted destination: Hyvä hides rates with errors).
+ */
+declare(strict_types=1);
+
+use Hyva\Theme\Model\ViewModelRegistry;
+use Hyva\Theme\ViewModel\LucideIcons;
+use Magento\Framework\Escaper;
+use Magento\Framework\View\Element\Template;
+use SPS\Quotation\ViewModel\QuotationNotice;
+
+/** @var Template $block */
+/** @var Escaper $escaper */
+/** @var ViewModelRegistry $viewModels */
+
+$notice = $viewModels->require(QuotationNotice::class);
+$quotation = $notice->getQuotation();
+if (!$quotation) {
+    return;
+}
+$warning = $block->getData('context') === 'checkout' ? $notice->getDestinationWarning() : '';
+$icons = $viewModels->require(LucideIcons::class);
+?>
+<div class="mb-6 flex gap-3 rounded-md border border-blue-300 bg-blue-50 p-4 text-sm leading-relaxed text-blue-950" role="note">
+    <span class="shrink-0 text-blue-700"><?= $icons->fileTextHtml('', 22, 22, ['aria-hidden' => 'true']) ?></span>
+    <div>
+        <strong class="block text-base"><?= $escaper->escapeHtml(__('Quotation %1', $quotation->getIncrementId())) ?></strong>
+        <p><?= $escaper->escapeHtml($notice->getSummary()) ?></p>
+        <?php if ($warning !== ''): ?>
+            <p class="mt-2 font-semibold text-red-800" role="alert"><?= $escaper->escapeHtml($warning) ?></p>
+        <?php endif; ?>
+    </div>
+</div>
