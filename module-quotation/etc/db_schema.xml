@@ -43,6 +43,8 @@
         <column xsi:type="timestamp" name="updated_at" on_update="true" nullable="false" default="CURRENT_TIMESTAMP" comment="Updated"/>
         <column xsi:type="timestamp" name="sent_at" on_update="false" nullable="true" comment="Last sent to the customer"/>
         <column xsi:type="timestamp" name="reminder_sent_at" on_update="false" nullable="true" comment="Expiry reminder sent"/>
+        <column xsi:type="varchar" name="source" length="16" nullable="true" comment="Where it was requested: product, cart, admin"/>
+        <column xsi:type="int" name="source_quote_id" unsigned="true" nullable="true" comment="Customer cart a cart request came from (informational; not the quotation cart)"/>
         <constraint xsi:type="primary" referenceId="PRIMARY">
             <column name="entity_id"/>
         </constraint>
@@ -64,6 +66,9 @@
         </index>
         <index referenceId="SPS_QUOTATION_ORDER_ID" indexType="btree">
             <column name="order_id"/>
+        </index>
+        <index referenceId="SPS_QUOTATION_SOURCE_QUOTE_ID" indexType="btree">
+            <column name="source_quote_id"/>
         </index>
     </table>
     <table name="sps_quotation_item" resource="default" engine="innodb" comment="SPS Quotation Item">

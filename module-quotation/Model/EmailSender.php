@@ -34,11 +34,26 @@ class EmailSender
     ) {
     }
 
-    /** New request from the storefront: notify staff and confirm to the customer. Never throws. */
-    public function sendRequestNotifications(QuotationInterface $quotation): void
+    /**
+     * New (or updated, see RequestService merge rule) request from the storefront: notify staff and confirm to the
+     * customer. Never throws.
+     */
+    public function sendRequestNotifications(QuotationInterface $quotation, bool $updated = false): void
     {
         $storeId = (int) $quotation->getStoreId();
         $vars = $this->vars($quotation);
+        $number = (string) $quotation->getIncrementId();
+        $fromCart = $quotation->getData(QuotationInterface::SOURCE) === QuotationInterface::SOURCE_CART;
+        $vars['is_update'] = $updated;
+        $vars['request_subject'] = (string) ($updated
+            ? __('Updated shipping quote request %1', $number)
+            : __('New shipping quote request %1', $number));
+        $vars['request_intro'] = (string) ($updated
+            ? __('A customer updated their shipping quote request.')
+            : __('A customer requested a shipping quote.'));
+        $vars['request_from'] = (string) ($fromCart
+            ? __('Cart (%1 items)', count($quotation->getItems()))
+            : __('Product page'));
         foreach ($this->config->getStaffRecipients($storeId) as $to) {
             $this->send('request_staff_template', $storeId, $to, '', $vars, [], (string) $quotation->getCustomerEmail());
         }

@@ -45,6 +45,12 @@ interface QuotationInterface
     public const UPDATED_AT = 'updated_at';
     public const SENT_AT = 'sent_at';
     public const REMINDER_SENT_AT = 'reminder_sent_at';
+    public const SOURCE = 'source';
+    public const SOURCE_QUOTE_ID = 'source_quote_id';
+
+    public const SOURCE_PRODUCT = 'product';
+    public const SOURCE_CART = 'cart';
+    public const SOURCE_ADMIN = 'admin';
 
     /** Status values */
     public const STATUS_REQUESTED = 'requested';

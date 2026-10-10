@@ -3,38 +3,61 @@
  * Copyright © SPS. All rights reserved.
  * Licensed under the Open Software License version 3.0 (OSL-3.0), see LICENSE.txt.
  *
- * "Request a shipping quote" dialog (before.body.end on product pages, so it is never nested in the add-to-cart
- * form). Opened by the button in the quote-required notice (window event "sps-quotation-request-open").
- * Selected custom options of the product form are sent along. CSP-safe Alpine component.
+ * Quote request dialog, rendered in before.body.end (never nested in another form). Block argument "mode":
+ *  - product (default): "Request a shipping quote" for the current product; the product form's qty and selected
+ *    custom options are sent along (block class Magento\Catalog\Block\Product\View)
+ *  - cart: "Request a quote for my cart" on the cart page / in the checkout (argument "context" = checkout reads
+ *    the address the customer already typed into the checkout form when the dialog opens)
+ * Opened by the button in the quote-required notice (window event "sps-quotation-request-open").
+ * CSP-safe Alpine component.
  */
 declare(strict_types=1);
 
 use Hyva\Theme\Model\ViewModelRegistry;
 use Hyva\Theme\ViewModel\HyvaCsp;
-use Magento\Catalog\Block\Product\View;
 use Magento\Framework\Escaper;
+use Magento\Framework\View\Element\Template;
+use SPS\Quotation\ViewModel\CartRequest;
 use SPS\Quotation\ViewModel\RequestForm;
 
-/** @var View $block */
+/** @var Template $block */
 /** @var Escaper $escaper */
 /** @var ViewModelRegistry $viewModels */
 /** @var HyvaCsp $hyvaCsp */
 
 $form = $viewModels->require(RequestForm::class);
-$product = $block->getProduct();
-if (!$form->isAvailable($product)) {
-    return;
+$isCart = $block->getData('mode') === 'cart';
+$prefill = [];
+if ($isCart) {
+    $cartRequest = $viewModels->require(CartRequest::class);
+    if (!$cartRequest->isAvailable()) {
+        return;
+    }
+    $submitUrl = $cartRequest->getSubmitUrl();
+    $prefill = $cartRequest->getPrefill();
+} else {
+    /** @var \Magento\Catalog\Block\Product\View $block */
+    $product = $block->getProduct();
+    if (!$form->isAvailable($product)) {
+        return;
+    }
+    $submitUrl = $form->getSubmitUrl();
 }
-$defaultCountry = $form->getDefaultCountry();
+$defaultCountry = ($prefill['country_id'] ?? '') ?: $form->getDefaultCountry();
+$value = static fn(string $field): string => (string) ($prefill[$field] ?? '');
+$title = $isCart ? __('Request a quote for my cart') : __('Request a shipping quote');
 ?>
-<div x-data="spsQuotationRequest" @sps-quotation-request-open.window="open">
+<div x-data="spsQuotationRequest" @sps-quotation-request-open.window="open"
+     data-mode="<?= $isCart ? 'cart' : 'product' ?>"
+     data-read-checkout="<?= $isCart && $block->getData('context') === 'checkout' ? '1' : '0' ?>"
+     data-region-id="<?= $escaper->escapeHtmlAttr($value('region_id')) ?>">
     <dialog x-ref="dialog" class="w-full max-w-xl rounded-lg p-0 shadow-xl backdrop:bg-black/50"
             aria-labelledby="sps-quotation-request-title">
         <form x-ref="form" @submit.prevent="submit" class="p-6" novalidate
-              action="<?= $escaper->escapeUrl($form->getSubmitUrl()) ?>">
+              action="<?= $escaper->escapeUrl($submitUrl) ?>">
             <div class="mb-4 flex items-start justify-between gap-4">
                 <h2 id="sps-quotation-request-title" class="text-xl font-semibold">
-                    <?= $escaper->escapeHtml(__('Request a shipping quote')) ?>
+                    <?= $escaper->escapeHtml($title) ?>
                 </h2>
                 <button type="button" class="p-1 text-gray-500 hover:text-gray-900" @click="close"
                         aria-label="<?= $escaper->escapeHtmlAttr(__('Close')) ?>">&times;</button>
@@ -42,31 +65,52 @@ $defaultCountry = $form->getDefaultCountry();
 
             <div x-show="isDone" class="space-y-4" role="status">
                 <p class="rounded-md bg-green-50 p-4 text-green-900" x-text="message"></p>
+                <?php if ($isCart): ?>
+                    <p class="text-sm text-gray-700" x-text="followUp"></p>
+                <?php endif; ?>
                 <div class="text-right">
                     <button type="button" class="btn btn-primary" @click="close"><?= $escaper->escapeHtml(__('Close')) ?></button>
                 </div>
             </div>
 
             <div x-show="isOpenForm" class="space-y-4">
-                <p class="text-sm text-gray-700">
-                    <strong><?= $escaper->escapeHtml($product->getName()) ?></strong><br>
-                    <?= $escaper->escapeHtml($form->getIntro()) ?>
-                </p>
-                <input type="hidden" name="product_id" value="<?= (int) $product->getId() ?>">
+                <?php if ($isCart): ?>
+                    <p class="text-sm text-gray-700">
+                        <?= $escaper->escapeHtml(__('We\'ll quote everything in your cart below — prices and freight together. A quotation is final: coupons and promotions don\'t apply, any discount is included in the quoted prices.')) ?>
+                    </p>
+                    <ul class="max-h-40 space-y-1 overflow-y-auto rounded-md border border-gray-200 bg-gray-50 p-3 text-sm"
+                        aria-label="<?= $escaper->escapeHtmlAttr(__('Your cart')) ?>">
+                        <?php foreach ($cartRequest->getItems() as $item): ?>
+                            <li>
+                                <span class="font-semibold"><?= $escaper->escapeHtml((string) (float) $item['qty']) ?> &times;</span>
+                                <?= $escaper->escapeHtml($item['name']) ?>
+                                <?php foreach ($item['options'] as $option): ?>
+                                    <span class="block pl-6 text-xs text-gray-600"><?= $escaper->escapeHtml($option) ?></span>
+                                <?php endforeach; ?>
+                            </li>
+                        <?php endforeach; ?>
+                    </ul>
+                <?php else: ?>
+                    <p class="text-sm text-gray-700">
+                        <strong><?= $escaper->escapeHtml($product->getName()) ?></strong><br>
+                        <?= $escaper->escapeHtml($form->getIntro()) ?>
+                    </p>
+                    <input type="hidden" name="product_id" value="<?= (int) $product->getId() ?>">
+                <?php endif; ?>
                 <div class="hidden" aria-hidden="true">
                     <label>Website <input type="text" name="website" tabindex="-1" autocomplete="off"></label>
                 </div>
                 <div class="grid gap-4 sm:grid-cols-2">
                     <label class="block text-sm"><?= $escaper->escapeHtml(__('First name')) ?> *
-                        <input class="form-input w-full" name="firstname" autocomplete="given-name" required></label>
+                        <input class="form-input w-full" name="firstname" autocomplete="given-name" value="<?= $escaper->escapeHtmlAttr($value('firstname')) ?>" required></label>
                     <label class="block text-sm"><?= $escaper->escapeHtml(__('Last name')) ?> *
-                        <input class="form-input w-full" name="lastname" autocomplete="family-name" required></label>
+                        <input class="form-input w-full" name="lastname" autocomplete="family-name" value="<?= $escaper->escapeHtmlAttr($value('lastname')) ?>" required></label>
                     <label class="block text-sm"><?= $escaper->escapeHtml(__('E-mail')) ?> *
-                        <input class="form-input w-full" type="email" name="email" autocomplete="email" required></label>
+                        <input class="form-input w-full" type="email" name="email" autocomplete="email" value="<?= $escaper->escapeHtmlAttr($value('email')) ?>" required></label>
                     <label class="block text-sm"><?= $escaper->escapeHtml(__('Phone')) ?> *
-                        <input class="form-input w-full" type="tel" name="phone" autocomplete="tel" required></label>
+                        <input class="form-input w-full" type="tel" name="phone" autocomplete="tel" value="<?= $escaper->escapeHtmlAttr($value('phone')) ?>" required></label>
                     <label class="block text-sm sm:col-span-2"><?= $escaper->escapeHtml(__('Company (optional)')) ?>
-                        <input class="form-input w-full" name="company" autocomplete="organization"></label>
+                        <input class="form-input w-full" name="company" autocomplete="organization" value="<?= $escaper->escapeHtmlAttr($value('company')) ?>"></label>
                     <label class="block text-sm"><?= $escaper->escapeHtml(__('Ship to country')) ?> *
                         <select class="form-select w-full" name="country_id" autocomplete="country" required x-ref="country" @change="countryChanged">
                             <?php foreach ($form->getCountries() as $country): ?>
@@ -76,13 +120,16 @@ $defaultCountry = $form->getDefaultCountry();
                         </select></label>
                     <label class="block text-sm"><?= $escaper->escapeHtml(__('State / Province')) ?><span x-show="isRegionRequired"> *</span>
                         <select class="form-select w-full" name="region_id" x-ref="regionSelect" autocomplete="address-level1"></select>
-                        <input class="form-input w-full" name="region" x-ref="regionText" autocomplete="address-level1" hidden></label>
+                        <input class="form-input w-full" name="region" x-ref="regionText" autocomplete="address-level1" hidden
+                               value="<?= $escaper->escapeHtmlAttr($value('region')) ?>"></label>
                     <label class="block text-sm"><?= $escaper->escapeHtml(__('Postal / ZIP code')) ?> *
-                        <input class="form-input w-full" name="postcode" autocomplete="postal-code" required></label>
+                        <input class="form-input w-full" name="postcode" autocomplete="postal-code" value="<?= $escaper->escapeHtmlAttr($value('postcode')) ?>" required></label>
                     <label class="block text-sm"><?= $escaper->escapeHtml(__('City')) ?>
-                        <input class="form-input w-full" name="city" autocomplete="address-level2"></label>
-                    <label class="block text-sm"><?= $escaper->escapeHtml(__('Quantity')) ?> *
-                        <input class="form-input w-full" type="number" name="qty" min="1" max="9999" step="1" value="1" x-ref="qty" required></label>
+                        <input class="form-input w-full" name="city" autocomplete="address-level2" value="<?= $escaper->escapeHtmlAttr($value('city')) ?>"></label>
+                    <?php if (!$isCart): ?>
+                        <label class="block text-sm"><?= $escaper->escapeHtml(__('Quantity')) ?> *
+                            <input class="form-input w-full" type="number" name="qty" min="1" max="9999" step="1" value="1" x-ref="qty" required></label>
+                    <?php endif; ?>
                     <label class="block text-sm sm:col-span-2"><?= $escaper->escapeHtml(__('Message (optional)')) ?>
                         <textarea class="form-input w-full" name="message" rows="3" maxlength="2000"
                                   placeholder="<?= $escaper->escapeHtmlAttr(__('Delivery details, e.g. residential address, stairs, deadline')) ?>"></textarea></label>
@@ -102,15 +149,65 @@ $defaultCountry = $form->getDefaultCountry();
         const regionData = <?= /* @noEscape */ $form->getRegionsJson() ?>;
         const chooseRegion = <?= /* @noEscape */ json_encode((string) __('Please select'), JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) ?>;
         const incomplete = <?= /* @noEscape */ json_encode((string) __('Please fill in all required fields.'), JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) ?>;
+        const followUp = <?= /* @noEscape */ json_encode((string) __('Need more items? Add them to your cart and request again — we\'ll update quotation %1 until we\'ve sent it to you. You can still choose store pickup and buy now.'), JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) ?>;
+        // checkout form field → request form field (read when the dialog opens in the checkout)
+        const checkoutFields = {
+            firstname: 'firstname', lastname: 'lastname', telephone: 'phone', company: 'company',
+            postcode: 'postcode', city: 'city'
+        };
 
         function spsQuotationRequest() {
             return {
                 state: 'form',
                 message: '',
+                followUp: '',
+                mode: 'product',
                 regionRequired: false,
                 get isRegionRequired() { return this.regionRequired; },
                 init() {
+                    this.mode = this.$el.dataset.mode || 'product';
                     this.countryChanged();
+                    this.selectRegion(this.$el.dataset.regionId || '');
+                },
+                selectRegion(regionId) {
+                    const select = this.$refs.regionSelect;
+                    if (regionId && !select.hidden && select.querySelector('option[value="' + CSS.escape(String(regionId)) + '"]')) {
+                        select.value = String(regionId);
+                    }
+                },
+                // the address typed into the checkout so far (guest form; logged-in customers get the server prefill)
+                readCheckout() {
+                    const shipping = document.getElementById('shipping');
+                    const form = this.$refs.form;
+                    if (!shipping) {
+                        return;
+                    }
+                    Object.keys(checkoutFields).forEach((name) => {
+                        const source = shipping.querySelector('[name="' + name + '"]');
+                        const target = form.querySelector('[name="' + checkoutFields[name] + '"]');
+                        if (source && target && source.value) {
+                            target.value = source.value;
+                        }
+                    });
+                    const email = document.getElementById('guest_details-email_address');
+                    if (email && email.value) {
+                        form.querySelector('[name="email"]').value = email.value;
+                    }
+                    const country = shipping.querySelector('[name="country_id"]');
+                    if (country && country.value && country.value !== this.$refs.country.value
+                        && this.$refs.country.querySelector('option[value="' + CSS.escape(country.value) + '"]')) {
+                        this.$refs.country.value = country.value;
+                        this.countryChanged();
+                    }
+                    const region = shipping.querySelector('[name="region"], [name="region_id"]');
+                    if (region && region.value) {
+                        if (this.$refs.regionSelect.hidden) {
+                            this.$refs.regionText.value = region.tagName === 'SELECT'
+                                ? region.options[region.selectedIndex].text : region.value;
+                        } else {
+                            this.selectRegion(region.value);
+                        }
+                    }
                 },
                 countryChanged() {
                     const country = this.$refs.country.value;
@@ -146,9 +243,13 @@ $defaultCountry = $form->getDefaultCountry();
                 get isSubmitting() { return this.state === 'sending'; },
                 get hasError() { return this.state === 'error'; },
                 open() {
-                    const productQty = document.querySelector('#product_addtocart_form input[name="qty"]');
-                    if (productQty && parseInt(productQty.value, 10) > 0) {
-                        this.$refs.qty.value = productQty.value;
+                    if (this.mode === 'product') {
+                        const productQty = document.querySelector('#product_addtocart_form input[name="qty"]');
+                        if (productQty && parseInt(productQty.value, 10) > 0 && this.$refs.qty) {
+                            this.$refs.qty.value = productQty.value;
+                        }
+                    } else if (this.$el.dataset.readCheckout === '1' && this.state !== 'done') {
+                        this.readCheckout();
                     }
                     if (this.state !== 'done') {
                         this.state = 'form';
@@ -171,7 +272,7 @@ $defaultCountry = $form->getDefaultCountry();
                     const data = new FormData(form);
                     data.append('form_key', hyva.getFormKey());
                     // custom options chosen in the product form (options[id] / options[id][])
-                    const productForm = document.getElementById('product_addtocart_form');
+                    const productForm = this.mode === 'product' ? document.getElementById('product_addtocart_form') : null;
                     if (productForm) {
                         for (const [key, value] of new FormData(productForm).entries()) {
                             if (/^options\[\d+\](\[\])?$/.test(key) && typeof value === 'string' && value !== '') {
@@ -189,8 +290,9 @@ $defaultCountry = $form->getDefaultCountry();
                         });
                         const result = await response.json().catch(() => ({}));
                         this.message = result.message || failed;
+                        this.followUp = result.number ? followUp.replace('%1', result.number) : '';
                         this.state = result.success ? 'done' : 'error';
-                        if (result.success) {
+                        if (result.success && this.mode === 'product') {
                             form.reset();
                             this.countryChanged();
                         }
@@ -198,6 +300,23 @@ $defaultCountry = $form->getDefaultCountry();
                         this.message = failed;
                         this.state = 'error';
                     }
+                }
+            };
+        }
+
+        const otherOne = <?= /* @noEscape */ json_encode((string) __('You have 1 other item in your cart.'), JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) ?>;
+        const otherMany = <?= /* @noEscape */ json_encode((string) __('You have %1 other items in your cart.'), JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) ?>;
+
+        // product page: point to the whole-cart request when the cart already holds other products
+        function spsQuotationCartHint() {
+            return {
+                others: 0,
+                get hasOthers() { return this.others > 0; },
+                get text() { return this.others === 1 ? otherOne : otherMany.replace('%1', String(this.others)); },
+                receive(event) {
+                    const cart = ((event && event.detail && event.detail.data) || {}).cart || {};
+                    const productId = String(this.$el.dataset.productId || '');
+                    this.others = (cart.items || []).filter((item) => String(item.product_id) !== productId).length;
                 }
             };
         }
@@ -213,6 +332,7 @@ $defaultCountry = $form->getDefaultCountry();
         const register = () => {
             Alpine.data('spsQuotationRequest', spsQuotationRequest);
             Alpine.data('spsQuotationOpener', spsQuotationOpener);
+            Alpine.data('spsQuotationCartHint', spsQuotationCartHint);
         };
         if (window.Alpine) {
             register();

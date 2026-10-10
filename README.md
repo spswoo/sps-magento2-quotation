@@ -14,8 +14,11 @@ bulky equipment.
   for a shipping quote (checkout, cart page and product page messages with `{products}`, `{phone}`, `{email}`
   placeholders). Works for storefront, REST/GraphQL and admin-created orders.
 
+- "Request a shipping quote" form on quote-required product pages, and "Request a quote for my cart" on the cart
+  page / Hyvä Checkout for carts with a quote-required product (guests and customers). Repeated requests from the
+  same customer update their open request instead of creating duplicates.
+
 **Planned (v1)**
-- "Request a shipping quote" form on quote-required product pages (guests and customers).
 - Admin quotations (Sales > Quotations): create from a request or from scratch, special item prices, product
   custom options, custom freight charge, estimated tax, expiry date.
 - E-mail the quotation with a secure checkout link. The link opens the normal checkout with the quoted items,

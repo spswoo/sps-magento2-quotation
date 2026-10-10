@@ -1,5 +1,8 @@
-<!--@subject {{trans "New shipping quote request %number" number=$quotation_number}} @-->
+<!--@subject {{var request_subject}} @-->
 <!--@vars {
+"var request_subject":"Subject",
+"var request_intro":"Introduction",
+"var request_from":"Requested from (product page / cart)",
 "var quotation_number":"Quotation number",
 "var customer_name":"Customer name",
 "var quotation.customer_email":"Customer e-mail",
@@ -11,9 +14,10 @@
 } @-->
 {{template config_path="design/email/header_template"}}
 
-<p>{{trans "A customer requested a shipping quote."}}</p>
+<p>{{var request_intro}}</p>
 <table class="sps-quotation-details" style="margin-bottom: 20px;">
     <tr><th align="left" style="padding-right: 12px;">{{trans "Request"}}</th><td>{{var quotation_number}}</td></tr>
+    <tr><th align="left" style="padding-right: 12px;">{{trans "Requested from"}}</th><td>{{var request_from}}</td></tr>
     <tr><th align="left" style="padding-right: 12px;">{{trans "Name"}}</th><td>{{var customer_name}}</td></tr>
     <tr><th align="left" style="padding-right: 12px;">{{trans "E-mail"}}</th><td>{{var quotation.customer_email}}</td></tr>
     <tr><th align="left" style="padding-right: 12px;">{{trans "Phone"}}</th><td>{{var quotation.customer_phone}}</td></tr>

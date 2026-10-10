@@ -21,6 +21,7 @@ use SPS\Quotation\Api\Data\QuotationInterface;
 use SPS\Quotation\Api\QuotationRepositoryInterface;
 use SPS\Quotation\Model\Config;
 use SPS\Quotation\Model\ItemOptions;
+use SPS\Quotation\Model\Source\RequestSource;
 use SPS\Quotation\Model\Quotation;
 use SPS\Quotation\Model\QuotationFactory;
 use SPS\Quotation\Model\QuotationItem;
@@ -76,6 +77,17 @@ class QuotationForm implements ArgumentInterface
     public function getStatusLabel(): string
     {
         return $this->getQuotation()->getId() ? $this->status->getLabel($this->getQuotation()->getStatus()) : (string) __('New');
+    }
+
+    /** "Cart (3 items)" / "Product page" / "Admin" — '' for quotations created before sources were recorded. */
+    public function getSourceLabel(): string
+    {
+        $quotation = $this->getQuotation();
+        $label = (new RequestSource())->getLabel($quotation->getData(QuotationInterface::SOURCE));
+        if ($label !== '' && $quotation->getData(QuotationInterface::SOURCE) === QuotationInterface::SOURCE_CART) {
+            $label = (string) __('%1 (%2 items)', $label, count($quotation->getItems()));
+        }
+        return $label;
     }
 
     public function isLocked(): bool
@@ -176,8 +188,28 @@ class QuotationForm implements ArgumentInterface
                 'original_price' => $item->getOriginalPrice(),
                 'options' => $item->getBuyRequestOptions()['options'] ?? new \stdClass(),
                 'definitions' => $definitions,
+                // passed back unchanged on save; details = what the customer's cart showed (read-only)
+                'extra' => $this->itemOptions->getExtra($item->getBuyRequestOptions()) ?: new \stdClass(),
+                'details' => $this->extraLabels($item->getBuyRequestOptions()),
             ];
         }
         return $rows;
+    }
+
+    /**
+     * Labels of the cart snapshot that the editable custom options don't cover.
+     *
+     * @param array<string, mixed> $stored
+     * @return array<int, array{label: string, value: string}>
+     */
+    private function extraLabels(array $stored): array
+    {
+        $labels = [];
+        foreach ((array) ($stored[ItemOptions::DISPLAY_KEY] ?? []) as $entry) {
+            if (is_array($entry)) {
+                $labels[] = ['label' => (string) ($entry['label'] ?? ''), 'value' => (string) ($entry['value'] ?? '')];
+            }
+        }
+        return $labels;
     }
 }

@@ -5,6 +5,20 @@ All notable changes to this project are documented here. The format follows
 
 ## [Unreleased]
 
+### Added (cart quotes)
+- "Request a quote for my cart" on the cart page and in the Hyvä Checkout shipping step when the cart holds a
+  quote-required product: one request for everything in the cart (quantities, custom options and other product
+  configuration from the cart line's buy request, plus the option labels the cart showed). The cart is not changed;
+  in the checkout the dialog is pre-filled from the address already entered.
+- One customer, one open request: a new request from the same cart, or from the same e-mail for an overlapping
+  product, updates the open request (status "requested") instead of creating another one; staff get an
+  "Updated shipping quote request" e-mail, the customer message history is kept. Requests staff are working on are
+  never changed.
+- Product page hint "You have N other items in your cart — request a quote for your whole cart instead" (from the
+  visitor's cart section data, page-cache safe).
+- `sps_quotation.source` (product / cart / admin) and `source_quote_id`; admin grid column and editor line
+  "Requested from"; the editor shows cart option details read-only and keeps non-editable configuration on save.
+
 ### Fixed
 - `SPS_QuotationHyvaCheckout`: the quotation notice in the shipping step is now a Magewire component that refreshes when
   the shipping address is saved, so the "outside the quoted destination" warning appears as soon as the postcode

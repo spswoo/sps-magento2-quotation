@@ -69,7 +69,9 @@ class CartBuilder
             foreach ($quotation->getItems() as $item) {
                 /** @var QuotationItem $item */
                 $product = $this->productRepository->getById((int) $item->getProductId(), false, (int) $store->getId(), true);
-                $request = new DataObject(['qty' => $item->getQty()] + $item->getBuyRequestOptions());
+                $buyRequest = $item->getBuyRequestOptions();
+                unset($buyRequest[ItemOptions::DISPLAY_KEY]);
+                $request = new DataObject(['qty' => $item->getQty()] + $buyRequest);
                 $result = $quote->addProduct($product, $request);
                 if (is_string($result)) {
                     throw new LocalizedException(__('%1 cannot be added to the cart: %2', $item->getName(), $result));

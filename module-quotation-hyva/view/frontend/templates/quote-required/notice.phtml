@@ -15,6 +15,7 @@ use Hyva\Theme\Model\ViewModelRegistry;
 use Hyva\Theme\ViewModel\LucideIcons;
 use Magento\Framework\Escaper;
 use Magento\Framework\View\Element\Template;
+use SPS\Quotation\ViewModel\CartRequest;
 use SPS\Quotation\ViewModel\QuoteRequiredNotice;
 use SPS\Quotation\ViewModel\RequestForm;
 
@@ -25,10 +26,10 @@ use SPS\Quotation\ViewModel\RequestForm;
 $notice = $viewModels->require(QuoteRequiredNotice::class);
 $context = (string) $block->getData('context');
 $linkClass = 'font-semibold underline';
-if ($context === 'cart') {
-    $html = $notice->getCartMessageHtml($linkClass);
-} elseif ($context === 'checkout') {
-    $html = $notice->getCheckoutMessageHtml($linkClass);
+if ($context === 'cart' || $context === 'checkout') {
+    $html = $context === 'cart' ? $notice->getCartMessageHtml($linkClass) : $notice->getCheckoutMessageHtml($linkClass);
+    // "Request a quote for my cart"; the dialog is SPS_QuotationHyva::request/form.phtml in mode "cart"
+    $canRequestCart = $html !== '' && $viewModels->require(CartRequest::class)->isAvailable();
 } else {
     /** @var \Magento\Catalog\Block\Product\View $block */
     $html = $notice->getProductMessageHtml($block->getProduct(), $linkClass);
@@ -50,6 +51,18 @@ $icons = $viewModels->require(LucideIcons::class);
         <?php if (!empty($canRequest)): ?>
             <div class="mt-3" x-data="spsQuotationOpener">
                 <button type="button" class="btn btn-primary" @click="open"><?= $escaper->escapeHtml(__('Request a shipping quote')) ?></button>
+            </div>
+            <?php /* filled from the visitor's cart (section data): the product page is page-cached */ ?>
+            <p class="mt-2" x-data="spsQuotationCartHint" x-show="hasOthers" x-cloak
+               data-product-id="<?= (int) $block->getProduct()->getId() ?>"
+               @private-content-loaded.window="receive">
+                <span x-text="text"></span>
+                <a class="<?= $escaper->escapeHtmlAttr($linkClass) ?>" href="<?= $escaper->escapeUrl($block->getUrl('checkout/cart')) ?>"><?= $escaper->escapeHtml(__('Request a quote for your whole cart instead')) ?></a>
+            </p>
+        <?php endif; ?>
+        <?php if (!empty($canRequestCart)): ?>
+            <div class="mt-3" x-data="spsQuotationOpener">
+                <button type="button" class="btn btn-primary" @click="open"><?= $escaper->escapeHtml(__('Request a quote for my cart')) ?></button>
             </div>
         <?php endif; ?>
     </div>

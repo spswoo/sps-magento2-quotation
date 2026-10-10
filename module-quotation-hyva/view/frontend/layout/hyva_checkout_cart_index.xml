@@ -20,5 +20,13 @@
                 </arguments>
             </block>
         </referenceContainer>
+        <!-- "Request a quote for my cart" dialog (opened from the quote-required notice) -->
+        <referenceContainer name="before.body.end">
+            <block name="sps.quotation.request.cart" template="SPS_QuotationHyva::request/form.phtml">
+                <arguments>
+                    <argument name="mode" xsi:type="string">cart</argument>
+                </arguments>
+            </block>
+        </referenceContainer>
     </body>
 </page>

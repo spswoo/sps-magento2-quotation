@@ -74,10 +74,14 @@ class Submit implements HttpPostActionInterface
             }
             $customerId = $this->customerSession->isLoggedIn() ? (int) $this->customerSession->getCustomerId() : null;
             $quotation = $this->requestService->create($product, $post, $storeId, $customerId);
+            $merged = (bool) $quotation->getData('merged');
             return $result->setData([
                 'success' => true,
-                'message' => $this->successMessage($storeId),
+                'message' => $merged
+                    ? (string) __('Your request %1 has been updated.', $quotation->getIncrementId())
+                    : $this->successMessage($storeId),
                 'number' => $quotation->getIncrementId(),
+                'merged' => $merged,
             ]);
         } catch (LocalizedException $e) {
             return $result->setHttpResponseCode(400)->setData(['success' => false, 'message' => $e->getMessage()]);

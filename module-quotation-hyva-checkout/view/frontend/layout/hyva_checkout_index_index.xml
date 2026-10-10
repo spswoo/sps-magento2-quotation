@@ -1,0 +1,21 @@
+<?xml version="1.0"?>
+<!--
+/**
+ * Copyright © SPS. All rights reserved.
+ * Licensed under the Open Software License version 3.0 (OSL-3.0), see LICENSE.txt.
+ */
+-->
+<page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
+    <body>
+        <!-- "Request a quote for my cart" dialog, outside the Magewire components (not replaced on re-render);
+             opened from the quote-required notice in the shipping step, pre-filled from the checkout address form -->
+        <referenceContainer name="before.body.end">
+            <block name="sps.quotation.request.checkout" template="SPS_QuotationHyva::request/form.phtml">
+                <arguments>
+                    <argument name="mode" xsi:type="string">cart</argument>
+                    <argument name="context" xsi:type="string">checkout</argument>
+                </arguments>
+            </block>
+        </referenceContainer>
+    </body>
+</page>

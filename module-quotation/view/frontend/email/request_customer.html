@@ -3,12 +3,17 @@
 "var quotation_number":"Quotation number",
 "var customer_name":"Customer name",
 "var destination":"Destination",
+"var is_update":"Request was updated",
 "layout handle=\"sps_quotation_email_items\" quotation=$quotation":"Items"
 } @-->
 {{template config_path="design/email/header_template"}}
 
 <p class="greeting">{{trans "Hello %name," name=$customer_name}}</p>
+{{if is_update}}
+<p>{{trans "Thank you — we updated your request %number with the items and details below. Our team will calculate the shipping and e-mail you a quotation you can pay online." number=$quotation_number}}</p>
+{{else}}
 <p>{{trans "Thank you for your request. Our team will calculate the shipping and e-mail you a quotation you can pay online."}}</p>
+{{/if}}
 <p>{{trans "Request number: %number" number=$quotation_number}}<br>{{trans "Ship to: %destination" destination=$destination}}</p>
 {{layout handle="sps_quotation_email_items" quotation=$quotation area="frontend"}}
 

@@ -32,6 +32,7 @@ $field = static fn(string $name): string => 'quotation[' . $name . ']';
     .sps-quotation input.price { width: 110px; text-align: right; }
     .sps-quotation .row-total { white-space: nowrap; font-weight: 600; text-align: right; }
     .sps-quotation .sku { color: #666; font-size: 1.2rem; }
+    .sps-quotation .item-detail { margin-top: .25rem; color: #333; font-size: 1.2rem; white-space: pre-line; }
     .sps-quotation .item-option { margin-top: .5rem; }
     .sps-quotation .item-option label { display: block; font-size: 1.2rem; color: #555; }
     .sps-quotation .item-option select, .sps-quotation .item-option input { max-width: 320px; }
@@ -76,6 +77,9 @@ $field = static fn(string $name): string => 'quotation[' . $name . ']';
             <span><strong><?= $e->escapeHtml(__('Quotation')) ?></strong><?= $e->escapeHtml($quotation->getIncrementId()) ?></span>
             <span><strong><?= $e->escapeHtml(__('Status')) ?></strong><?= $e->escapeHtml($vm->getStatusLabel()) ?></span>
             <span><strong><?= $e->escapeHtml(__('Created')) ?></strong><?= $e->escapeHtml($vm->get(Q::CREATED_AT)) ?></span>
+            <?php if ($vm->getSourceLabel() !== ''): ?>
+                <span><strong><?= $e->escapeHtml(__('Requested from')) ?></strong><?= $e->escapeHtml($vm->getSourceLabel()) ?></span>
+            <?php endif; ?>
             <?php if ($vm->get(Q::SENT_AT)): ?>
                 <span><strong><?= $e->escapeHtml(__('Last sent')) ?></strong><?= $e->escapeHtml($vm->get(Q::SENT_AT)) ?></span>
             <?php endif; ?>
@@ -334,6 +338,10 @@ $script = <<<JS
         product.appendChild(el('input', { type: 'hidden', name: prefix + '[original_price]', value: item.original_price ?? '' }));
         product.appendChild(el('div', {}, item.name));
         product.appendChild(el('div', { class: 'sku' }, item.sku));
+        product.appendChild(el('input', { type: 'hidden', name: prefix + '[extra]', value: JSON.stringify(item.extra || {}) }));
+        (item.details || []).forEach((d) => {
+            product.appendChild(el('div', { class: 'item-detail' }, d.label + ': ' + d.value));
+        });
         (item.definitions || []).forEach((def) => {
             product.appendChild(optionControl(def, prefix + '[options][' + def.id + ']', (item.options || {})[def.id]));
         });

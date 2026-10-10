@@ -51,6 +51,9 @@ class FormHandler
         if ($quotation->getStatus() === Q::STATUS_ORDERED) {
             throw new LocalizedException(__('An ordered quotation cannot be changed.'));
         }
+        if (!$quotation->getId() && !$quotation->getData(Q::SOURCE)) {
+            $quotation->setData(Q::SOURCE, Q::SOURCE_ADMIN);
+        }
         $storeId = (int) ($data[Q::STORE_ID] ?? $quotation->getStoreId());
         $store = $this->storeManager->getStore($storeId);
         $quotation->setData(Q::STORE_ID, (int) $store->getId());
@@ -120,7 +123,10 @@ class FormHandler
                 'price' => $this->amount($row['price'] ?? null),
             ]);
             $options = is_array($row['options'] ?? null) ? $row['options'] : [];
-            $item->setBuyRequestOptions($this->itemOptions->normalize($product, $options, false));
+            // configuration the editor doesn't edit (e.g. from a cart request) is passed through unchanged
+            $extra = json_decode((string) ($row['extra'] ?? ''), true);
+            $extra = is_array($extra) ? $this->itemOptions->getExtra($extra) : [];
+            $item->setBuyRequestOptions($extra + $this->itemOptions->normalize($product, $options, false));
             $items[] = $item;
         }
         return $items;
