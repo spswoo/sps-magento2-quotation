@@ -54,7 +54,11 @@ class QuotationRepository implements QuotationRepositoryInterface
                     QuotationInterface::INCREMENT_ID,
                     $this->config->getNumberPrefix() . str_pad((string) $quotation->getId(), 6, '0', STR_PAD_LEFT)
                 );
-                $this->resource->saveAttribute($quotation, QuotationInterface::INCREMENT_ID);
+                $connection->update(
+                    $this->resource->getMainTable(),
+                    [QuotationInterface::INCREMENT_ID => $quotation->getIncrementId()],
+                    ['entity_id = ?' => (int) $quotation->getId()]
+                );
             }
             if ($quotation->hasItemsAssigned()) {
                 $connection->delete(
@@ -73,7 +77,10 @@ class QuotationRepository implements QuotationRepositoryInterface
             $connection->commit();
         } catch (\Throwable $e) {
             $connection->rollBack();
-            throw new CouldNotSaveException(__('Could not save the quotation: %1', $e->getMessage()), $e);
+            throw new CouldNotSaveException(
+                __('Could not save the quotation: %1', $e->getMessage()),
+                $e instanceof \Exception ? $e : new \RuntimeException($e->getMessage(), 0, $e)
+            );
         }
         return $quotation;
     }
@@ -84,7 +91,10 @@ class QuotationRepository implements QuotationRepositoryInterface
             /** @var Quotation $quotation */
             $this->resource->delete($quotation);
         } catch (\Throwable $e) {
-            throw new CouldNotDeleteException(__('Could not delete the quotation: %1', $e->getMessage()), $e);
+            throw new CouldNotDeleteException(
+                __('Could not delete the quotation: %1', $e->getMessage()),
+                $e instanceof \Exception ? $e : new \RuntimeException($e->getMessage(), 0, $e)
+            );
         }
     }
 }

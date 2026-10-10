@@ -66,8 +66,10 @@ class Save extends Action implements HttpPostActionInterface
             return $redirect->setPath('*/*/edit', ['id' => $quotation->getId()]);
         } catch (LocalizedException $e) {
             $this->messageManager->addErrorMessage($e->getMessage());
-        } catch (\Throwable $e) {
+        } catch (\Exception $e) {
             $this->messageManager->addExceptionMessage($e, __('Something went wrong while saving the quotation.'));
+        } catch (\Throwable $e) {
+            $this->messageManager->addErrorMessage(__('Something went wrong while saving the quotation: %1', $e->getMessage()));
         }
         return isset($quotation) && $quotation->getId()
             ? $redirect->setPath('*/*/edit', ['id' => $quotation->getId()])
