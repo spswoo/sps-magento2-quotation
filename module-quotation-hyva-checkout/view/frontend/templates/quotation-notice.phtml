@@ -1,0 +1,14 @@
+<?php
+/**
+ * Copyright © SPS. All rights reserved.
+ * Licensed under the Open Software License version 3.0 (OSL-3.0), see LICENSE.txt.
+ *
+ * Magewire root for the quotation notice (a component needs one root element even when there is no quotation).
+ */
+declare(strict_types=1);
+
+use Magento\Framework\View\Element\Template;
+
+/** @var Template $block */
+?>
+<div id="sps-quotation-checkout-notice"><?= $block->getChildHtml() ?></div>

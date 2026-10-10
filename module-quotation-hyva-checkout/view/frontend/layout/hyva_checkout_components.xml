@@ -15,10 +15,15 @@
                 </arguments>
             </block>
             <!-- carts built from a quotation: what is quoted + warning when the address is outside the quoted destination -->
-            <block name="sps.quotation.checkout.notice" template="SPS_QuotationHyva::quotation/notice.phtml">
+            <block name="sps.quotation.checkout.notice" template="SPS_QuotationHyvaCheckout::quotation-notice.phtml">
                 <arguments>
-                    <argument name="context" xsi:type="string">checkout</argument>
+                    <argument name="magewire" xsi:type="object">SPS\QuotationHyvaCheckout\Magewire\QuotationNotice</argument>
                 </arguments>
+                <block name="sps.quotation.checkout.notice.content" template="SPS_QuotationHyva::quotation/notice.phtml">
+                    <arguments>
+                        <argument name="context" xsi:type="string">checkout</argument>
+                    </arguments>
+                </block>
             </block>
         </referenceContainer>
     </body>

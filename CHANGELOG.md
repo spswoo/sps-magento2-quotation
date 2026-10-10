@@ -5,6 +5,11 @@ All notable changes to this project are documented here. The format follows
 
 ## [Unreleased]
 
+### Fixed
+- `SPS_QuotationHyvaCheckout`: the quotation notice in the shipping step is now a Magewire component that refreshes when
+  the shipping address is saved, so the "outside the quoted destination" warning appears as soon as the postcode
+  changes (Hyvä Checkout hides the unavailable freight rate without a message).
+
 ### Added
 - `SPS_Quotation`: "Quote required" products — a Yes/No product attribute hides all shipping methods except an
   allowed list (e.g. store pickup) when such a product is in the cart, and explains why at checkout
