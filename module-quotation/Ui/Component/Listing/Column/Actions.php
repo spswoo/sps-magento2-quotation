@@ -26,7 +26,11 @@ class Actions extends Column
 
     public function prepareDataSource(array $dataSource): array
     {
-        foreach ($dataSource['data']['items'] ?? [] as &$row) {
+        if (!isset($dataSource['data']['items'])) {
+            return $dataSource;
+        }
+        // iterate the real array by reference (a "?? []" expression would iterate a temporary copy)
+        foreach ($dataSource['data']['items'] as &$row) {
             if (isset($row['entity_id'])) {
                 $row[$this->getData('name')] = [
                     'edit' => [
@@ -36,6 +40,7 @@ class Actions extends Column
                 ];
             }
         }
+        unset($row);
         return $dataSource;
     }
 }

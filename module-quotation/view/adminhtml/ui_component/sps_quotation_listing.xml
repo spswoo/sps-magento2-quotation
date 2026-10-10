@@ -14,7 +14,7 @@
     <settings>
         <buttons>
             <button name="add">
-                <url path="*/*/new"/>
+                <url path="sps_quotation/quotation/new"/>
                 <class>primary</class>
                 <label translate="true">Add New Quotation</label>
                 <aclResource>SPS_Quotation::manage</aclResource>
