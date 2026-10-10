@@ -15,5 +15,9 @@
                 </arguments>
             </block>
         </referenceContainer>
+        <!-- request dialog outside the add-to-cart form (a form may not contain another form) -->
+        <referenceContainer name="before.body.end">
+            <block class="Magento\Catalog\Block\Product\View" name="sps.quotation.request.form" template="SPS_QuotationHyva::request/form.phtml"/>
+        </referenceContainer>
     </body>
 </page>

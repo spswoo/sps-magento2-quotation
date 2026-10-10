@@ -1,0 +1,15 @@
+<!--@subject {{trans "We received your shipping quote request %number" number=$quotation_number}} @-->
+<!--@vars {
+"var quotation_number":"Quotation number",
+"var customer_name":"Customer name",
+"var destination":"Destination",
+"layout handle=\"sps_quotation_email_items\" quotation=$quotation":"Items"
+} @-->
+{{template config_path="design/email/header_template"}}
+
+<p class="greeting">{{trans "Hello %name," name=$customer_name}}</p>
+<p>{{trans "Thank you for your request. Our team will calculate the shipping and e-mail you a quotation you can pay online."}}</p>
+<p>{{trans "Request number: %number" number=$quotation_number}}<br>{{trans "Ship to: %destination" destination=$destination}}</p>
+{{layout handle="sps_quotation_email_items" quotation=$quotation area="frontend"}}
+
+{{template config_path="design/email/footer_template"}}

@@ -7,6 +7,76 @@
 -->
 <config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Config:etc/system_file.xsd">
     <system>
+        <section id="sps_quotation" translate="label" sortOrder="320" showInDefault="1" showInWebsite="1" showInStore="1">
+            <label>Quotations</label>
+            <tab>sales</tab>
+            <resource>SPS_Quotation::config</resource>
+            <group id="general" translate="label" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
+                <label>General</label>
+                <field id="enabled" translate="label comment" type="select" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Enable Storefront Features</label>
+                    <source_model>SPS\Quotation\Model\Source\Mode</source_model>
+                    <comment><![CDATA[Quote request form and quotation checkout links. "Only for developer IPs" shows them only to the IPs in Advanced &gt; Developer &gt; Developer Client Restrictions (testing on a live store). Admin quotations are always available.]]></comment>
+                </field>
+                <field id="valid_days" translate="label comment" type="text" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Quotations Valid For (Days)</label>
+                    <comment>Default expiry for new quotations; can be changed per quotation.</comment>
+                    <validate>required-entry validate-digits validate-greater-than-zero</validate>
+                </field>
+                <field id="freight_label" translate="label" type="text" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Default Freight Label</label>
+                </field>
+                <field id="number_prefix" translate="label" type="text" sortOrder="40" showInDefault="1">
+                    <label>Quotation Number Prefix</label>
+                </field>
+            </group>
+            <group id="request" translate="label" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
+                <label>Quote Request Form</label>
+                <comment><![CDATA[Shown on products with <strong>Shipping Quote Required = Yes</strong>.]]></comment>
+                <field id="enabled" translate="label" type="select" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Show Request Form</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
+                <field id="intro" translate="label" type="textarea" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Introduction Text</label>
+                </field>
+                <field id="success_message" translate="label" type="textarea" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Success Message</label>
+                </field>
+                <field id="limit_per_hour" translate="label comment" type="text" sortOrder="40" showInDefault="1" showInWebsite="1">
+                    <label>Maximum Requests per Visitor and Hour</label>
+                    <comment>Per IP address; 0 = unlimited.</comment>
+                    <validate>validate-digits</validate>
+                </field>
+            </group>
+            <group id="email" translate="label" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="1">
+                <label>E-mails</label>
+                <field id="identity" translate="label" type="select" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Sender</label>
+                    <source_model>Magento\Config\Model\Config\Source\Email\Identity</source_model>
+                </field>
+                <field id="staff_recipient" translate="label comment" type="text" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Send New Requests To</label>
+                    <comment>Comma-separated e-mail addresses. Empty = the sender's address.</comment>
+                </field>
+                <field id="copy_to" translate="label comment" type="text" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Send Quotation Copy To (BCC)</label>
+                    <comment>Comma-separated e-mail addresses.</comment>
+                </field>
+                <field id="request_staff_template" translate="label" type="select" sortOrder="40" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>New Request Template (Staff)</label>
+                    <source_model>Magento\Config\Model\Config\Source\Email\Template</source_model>
+                </field>
+                <field id="request_customer_template" translate="label" type="select" sortOrder="50" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Request Received Template (Customer)</label>
+                    <source_model>Magento\Config\Model\Config\Source\Email\Template</source_model>
+                </field>
+                <field id="quotation_template" translate="label" type="select" sortOrder="60" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Quotation Template (Customer)</label>
+                    <source_model>Magento\Config\Model\Config\Source\Email\Template</source_model>
+                </field>
+            </group>
+        </section>
         <section id="carriers">
             <group id="spsquote" translate="label comment" sortOrder="7" showInDefault="1" showInWebsite="1" showInStore="1">
                 <label>Shipping Quote Required (SPS Quotation)</label>

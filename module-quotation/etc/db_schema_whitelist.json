@@ -1,0 +1,71 @@
+{
+    "sps_quotation": {
+        "column": {
+            "entity_id": true,
+            "increment_id": true,
+            "store_id": true,
+            "status": true,
+            "customer_id": true,
+            "customer_email": true,
+            "customer_firstname": true,
+            "customer_lastname": true,
+            "customer_phone": true,
+            "customer_company": true,
+            "dest_country_id": true,
+            "dest_region_id": true,
+            "dest_region": true,
+            "dest_postcode": true,
+            "dest_city": true,
+            "dest_street": true,
+            "freight_amount": true,
+            "freight_label": true,
+            "subtotal": true,
+            "tax_amount": true,
+            "grand_total": true,
+            "currency_code": true,
+            "customer_message": true,
+            "staff_note": true,
+            "expires_at": true,
+            "token_hash": true,
+            "quote_id": true,
+            "order_id": true,
+            "created_at": true,
+            "updated_at": true,
+            "sent_at": true
+        },
+        "index": {
+            "SPS_QUOTATION_STATUS": true,
+            "SPS_QUOTATION_CUSTOMER_EMAIL": true,
+            "SPS_QUOTATION_QUOTE_ID": true,
+            "SPS_QUOTATION_ORDER_ID": true
+        },
+        "constraint": {
+            "PRIMARY": true,
+            "SPS_QUOTATION_INCREMENT_ID": true,
+            "SPS_QUOTATION_STORE_ID_STORE_STORE_ID": true,
+            "SPS_QUOTATION_CUSTOMER_ID_CUSTOMER_ENTITY_ENTITY_ID": true
+        }
+    },
+    "sps_quotation_item": {
+        "column": {
+            "item_id": true,
+            "quotation_id": true,
+            "product_id": true,
+            "sku": true,
+            "name": true,
+            "qty": true,
+            "original_price": true,
+            "price": true,
+            "options": true,
+            "sort_order": true
+        },
+        "index": {
+            "SPS_QUOTATION_ITEM_QUOTATION_ID": true
+        },
+        "constraint": {
+            "PRIMARY": true,
+            "SPS_QUOTATION_ITEM_QUOTATION_ID_SPS_QUOTATION_ENTITY_ID": true,
+            "SPS_QUOTATION_ITEM_PRODUCT_ID_CATALOG_PRODUCT_ENTITY_ENTITY_ID": true
+        }
+    }
+}

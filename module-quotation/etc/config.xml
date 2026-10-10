@@ -23,5 +23,28 @@
                 <cart_message>Your cart contains items that need a shipping quote: {products}. Contact us at {phone} or {email}.</cart_message>
             </spsquote>
         </carriers>
+        <sps_quotation>
+            <general>
+                <!-- 0 = off, 1 = on, 2 = only for developer IPs (Advanced > Developer > Developer Client Restrictions) -->
+                <enabled>0</enabled>
+                <valid_days>14</valid_days>
+                <number_prefix>Q</number_prefix>
+                <freight_label>Freight (as quoted)</freight_label>
+            </general>
+            <request>
+                <enabled>1</enabled>
+                <intro>Tell us where the item is going and we'll e-mail you a shipping quote.</intro>
+                <success_message>Thank you! We received your request and will e-mail your shipping quote shortly.</success_message>
+                <limit_per_hour>5</limit_per_hour>
+            </request>
+            <email>
+                <identity>sales</identity>
+                <staff_recipient/>
+                <copy_to/>
+                <request_staff_template>sps_quotation_email_request_staff_template</request_staff_template>
+                <request_customer_template>sps_quotation_email_request_customer_template</request_customer_template>
+                <quotation_template>sps_quotation_email_quotation_template</quotation_template>
+            </email>
+        </sps_quotation>
     </default>
 </config>

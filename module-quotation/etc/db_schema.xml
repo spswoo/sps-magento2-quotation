@@ -1,0 +1,90 @@
+<?xml version="1.0"?>
+<!--
+/**
+ * Copyright © SPS. All rights reserved.
+ * Licensed under the Open Software License version 3.0 (OSL-3.0), see LICENSE.txt.
+ */
+-->
+<!--
+    Own tables only — no columns are added to core tables, so disabling or removing the module never affects
+    quotes, orders or products. Links to the cart (quote_id) and the order (order_id) live on the quotation.
+-->
+<schema xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:Setup/Declaration/Schema/etc/schema.xsd">
+    <table name="sps_quotation" resource="default" engine="innodb" comment="SPS Quotation">
+        <column xsi:type="int" name="entity_id" unsigned="true" nullable="false" identity="true" comment="Quotation ID"/>
+        <column xsi:type="varchar" name="increment_id" length="32" nullable="true" comment="Quotation number"/>
+        <column xsi:type="smallint" name="store_id" unsigned="true" nullable="true" comment="Store view"/>
+        <column xsi:type="varchar" name="status" length="32" nullable="false" default="draft" comment="Status"/>
+        <column xsi:type="int" name="customer_id" unsigned="true" nullable="true" comment="Customer ID (null = guest)"/>
+        <column xsi:type="varchar" name="customer_email" length="255" nullable="true" comment="Customer e-mail"/>
+        <column xsi:type="varchar" name="customer_firstname" length="255" nullable="true" comment="First name"/>
+        <column xsi:type="varchar" name="customer_lastname" length="255" nullable="true" comment="Last name"/>
+        <column xsi:type="varchar" name="customer_phone" length="64" nullable="true" comment="Phone"/>
+        <column xsi:type="varchar" name="customer_company" length="255" nullable="true" comment="Company"/>
+        <column xsi:type="varchar" name="dest_country_id" length="2" nullable="true" comment="Destination country"/>
+        <column xsi:type="int" name="dest_region_id" unsigned="true" nullable="true" comment="Destination region ID"/>
+        <column xsi:type="varchar" name="dest_region" length="255" nullable="true" comment="Destination region"/>
+        <column xsi:type="varchar" name="dest_postcode" length="20" nullable="true" comment="Destination postcode"/>
+        <column xsi:type="varchar" name="dest_city" length="255" nullable="true" comment="Destination city"/>
+        <column xsi:type="text" name="dest_street" nullable="true" comment="Destination street (one line per row)"/>
+        <column xsi:type="decimal" name="freight_amount" scale="4" precision="20" unsigned="false" nullable="true" comment="Freight charge"/>
+        <column xsi:type="varchar" name="freight_label" length="255" nullable="true" comment="Freight label shown at checkout"/>
+        <column xsi:type="decimal" name="subtotal" scale="4" precision="20" unsigned="false" nullable="true" comment="Items subtotal"/>
+        <column xsi:type="decimal" name="tax_amount" scale="4" precision="20" unsigned="false" nullable="true" comment="Estimated tax"/>
+        <column xsi:type="decimal" name="grand_total" scale="4" precision="20" unsigned="false" nullable="true" comment="Estimated grand total"/>
+        <column xsi:type="varchar" name="currency_code" length="3" nullable="true" comment="Currency"/>
+        <column xsi:type="text" name="customer_message" nullable="true" comment="Message from the customer"/>
+        <column xsi:type="text" name="staff_note" nullable="true" comment="Internal note"/>
+        <column xsi:type="date" name="expires_at" nullable="true" comment="Valid until (inclusive)"/>
+        <column xsi:type="varchar" name="token_hash" length="64" nullable="true" comment="SHA-256 of the checkout link token"/>
+        <column xsi:type="int" name="quote_id" unsigned="true" nullable="true" comment="Cart created from the quotation"/>
+        <column xsi:type="int" name="order_id" unsigned="true" nullable="true" comment="Order placed from the quotation"/>
+        <column xsi:type="timestamp" name="created_at" on_update="false" nullable="false" default="CURRENT_TIMESTAMP" comment="Created"/>
+        <column xsi:type="timestamp" name="updated_at" on_update="true" nullable="false" default="CURRENT_TIMESTAMP" comment="Updated"/>
+        <column xsi:type="timestamp" name="sent_at" on_update="false" nullable="true" comment="Last sent to the customer"/>
+        <constraint xsi:type="primary" referenceId="PRIMARY">
+            <column name="entity_id"/>
+        </constraint>
+        <constraint xsi:type="unique" referenceId="SPS_QUOTATION_INCREMENT_ID">
+            <column name="increment_id"/>
+        </constraint>
+        <constraint xsi:type="foreign" referenceId="SPS_QUOTATION_STORE_ID_STORE_STORE_ID"
+                    table="sps_quotation" column="store_id" referenceTable="store" referenceColumn="store_id" onDelete="SET NULL"/>
+        <constraint xsi:type="foreign" referenceId="SPS_QUOTATION_CUSTOMER_ID_CUSTOMER_ENTITY_ENTITY_ID"
+                    table="sps_quotation" column="customer_id" referenceTable="customer_entity" referenceColumn="entity_id" onDelete="SET NULL"/>
+        <index referenceId="SPS_QUOTATION_STATUS" indexType="btree">
+            <column name="status"/>
+        </index>
+        <index referenceId="SPS_QUOTATION_CUSTOMER_EMAIL" indexType="btree">
+            <column name="customer_email"/>
+        </index>
+        <index referenceId="SPS_QUOTATION_QUOTE_ID" indexType="btree">
+            <column name="quote_id"/>
+        </index>
+        <index referenceId="SPS_QUOTATION_ORDER_ID" indexType="btree">
+            <column name="order_id"/>
+        </index>
+    </table>
+    <table name="sps_quotation_item" resource="default" engine="innodb" comment="SPS Quotation Item">
+        <column xsi:type="int" name="item_id" unsigned="true" nullable="false" identity="true" comment="Item ID"/>
+        <column xsi:type="int" name="quotation_id" unsigned="true" nullable="false" comment="Quotation ID"/>
+        <column xsi:type="int" name="product_id" unsigned="true" nullable="true" comment="Product ID"/>
+        <column xsi:type="varchar" name="sku" length="64" nullable="true" comment="SKU"/>
+        <column xsi:type="varchar" name="name" length="255" nullable="true" comment="Product name"/>
+        <column xsi:type="decimal" name="qty" scale="4" precision="12" unsigned="false" nullable="false" default="1" comment="Quantity"/>
+        <column xsi:type="decimal" name="original_price" scale="4" precision="20" unsigned="false" nullable="true" comment="Catalog price when added"/>
+        <column xsi:type="decimal" name="price" scale="4" precision="20" unsigned="false" nullable="true" comment="Quoted unit price (null = not priced yet)"/>
+        <column xsi:type="text" name="options" nullable="true" comment="Product custom options (JSON: buy request options)"/>
+        <column xsi:type="smallint" name="sort_order" unsigned="true" nullable="false" default="0" comment="Sort order"/>
+        <constraint xsi:type="primary" referenceId="PRIMARY">
+            <column name="item_id"/>
+        </constraint>
+        <constraint xsi:type="foreign" referenceId="SPS_QUOTATION_ITEM_QUOTATION_ID_SPS_QUOTATION_ENTITY_ID"
+                    table="sps_quotation_item" column="quotation_id" referenceTable="sps_quotation" referenceColumn="entity_id" onDelete="CASCADE"/>
+        <constraint xsi:type="foreign" referenceId="SPS_QUOTATION_ITEM_PRODUCT_ID_CATALOG_PRODUCT_ENTITY_ENTITY_ID"
+                    table="sps_quotation_item" column="product_id" referenceTable="catalog_product_entity" referenceColumn="entity_id" onDelete="SET NULL"/>
+        <index referenceId="SPS_QUOTATION_ITEM_QUOTATION_ID" indexType="btree">
+            <column name="quotation_id"/>
+        </index>
+    </table>
+</schema>

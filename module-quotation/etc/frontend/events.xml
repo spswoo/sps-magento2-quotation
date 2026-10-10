@@ -1,0 +1,13 @@
+<?xml version="1.0"?>
+<!--
+/**
+ * Copyright © SPS. All rights reserved.
+ * Licensed under the Open Software License version 3.0 (OSL-3.0), see LICENSE.txt.
+ */
+-->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:Event/etc/events.xsd">
+    <!-- before the full page cache looks up the page: separate cache variant for test-mode visitors -->
+    <event name="controller_action_predispatch">
+        <observer name="sps_quotation_preview_context" instance="SPS\Quotation\Observer\PreviewHttpContext"/>
+    </event>
+</config>

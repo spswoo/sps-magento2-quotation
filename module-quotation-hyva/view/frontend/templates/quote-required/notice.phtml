@@ -16,6 +16,7 @@ use Hyva\Theme\ViewModel\LucideIcons;
 use Magento\Framework\Escaper;
 use Magento\Framework\View\Element\Template;
 use SPS\Quotation\ViewModel\QuoteRequiredNotice;
+use SPS\Quotation\ViewModel\RequestForm;
 
 /** @var Template $block */
 /** @var Escaper $escaper */
@@ -31,6 +32,8 @@ if ($context === 'cart') {
 } else {
     /** @var \Magento\Catalog\Block\Product\View $block */
     $html = $notice->getProductMessageHtml($block->getProduct(), $linkClass);
+    // "Request a shipping quote" button; the dialog itself is SPS_QuotationHyva::request/form.phtml
+    $canRequest = $html !== '' && $viewModels->require(RequestForm::class)->isAvailable($block->getProduct());
 }
 if ($html === '') {
     return;
@@ -39,8 +42,15 @@ $icons = $viewModels->require(LucideIcons::class);
 ?>
 <div class="<?= $context === 'product' ? 'my-4' : 'mb-6' ?> flex gap-3 rounded-md border border-amber-300 bg-amber-50 p-4 text-sm leading-relaxed text-amber-950" role="note">
     <span class="shrink-0 text-amber-700"><?= $icons->truckHtml('', 22, 22, ['aria-hidden' => 'true']) ?></span>
-    <p>
-        <strong class="block text-base"><?= $escaper->escapeHtml(__('Shipping quote required')) ?></strong>
-        <?= /* @noEscape — escaped in QuoteRequiredNotice, phone/e-mail links added */ $html ?>
-    </p>
+    <div>
+        <p>
+            <strong class="block text-base"><?= $escaper->escapeHtml(__('Shipping quote required')) ?></strong>
+            <?= /* @noEscape — escaped in QuoteRequiredNotice, phone/e-mail links added */ $html ?>
+        </p>
+        <?php if (!empty($canRequest)): ?>
+            <div class="mt-3" x-data="spsQuotationOpener">
+                <button type="button" class="btn btn-primary" @click="open"><?= $escaper->escapeHtml(__('Request a shipping quote')) ?></button>
+            </div>
+        <?php endif; ?>
+    </div>
 </div>

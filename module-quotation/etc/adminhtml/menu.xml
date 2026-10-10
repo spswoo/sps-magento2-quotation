@@ -1,0 +1,14 @@
+<?xml version="1.0"?>
+<!--
+/**
+ * Copyright © SPS. All rights reserved.
+ * Licensed under the Open Software License version 3.0 (OSL-3.0), see LICENSE.txt.
+ */
+-->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Backend:etc/menu.xsd">
+    <menu>
+        <add id="SPS_Quotation::quotations_menu" title="Quotations" translate="title" module="SPS_Quotation"
+             sortOrder="35" parent="Magento_Sales::sales_operation" action="sps_quotation/quotation/index"
+             resource="SPS_Quotation::quotations"/>
+    </menu>
+</config>

@@ -3,20 +3,38 @@
     "description": "Quotations for Magento 2 / Mage-OS: quote-required products, customer shipping-quote requests, admin quotations with special prices and freight, and pay-by-link checkout for guests and customers.",
     "type": "magento2-module",
     "license": "OSL-3.0",
-    "keywords": ["magento2", "mage-os", "quotation", "request a quote", "freight", "shipping quote"],
+    "keywords": [
+        "magento2",
+        "mage-os",
+        "quotation",
+        "request a quote",
+        "freight",
+        "shipping quote"
+    ],
     "require": {
         "php": "~8.1.0||~8.2.0||~8.3.0||~8.4.0",
         "magento/framework": "^103.0",
+        "magento/module-backend": "*",
         "magento/module-catalog": "*",
         "magento/module-checkout": "*",
         "magento/module-config": "*",
+        "magento/module-customer": "*",
+        "magento/module-directory": "*",
         "magento/module-eav": "*",
+        "magento/module-email": "*",
         "magento/module-quote": "*",
+        "magento/module-sales": "*",
         "magento/module-shipping": "*",
-        "magento/module-store": "*"
+        "magento/module-store": "*",
+        "magento/module-tax": "*",
+        "magento/module-ui": "*"
     },
     "autoload": {
-        "files": ["registration.php"],
-        "psr-4": {"SPS\\Quotation\\": ""}
+        "files": [
+            "registration.php"
+        ],
+        "psr-4": {
+            "SPS\\Quotation\\": ""
+        }
     }
 }

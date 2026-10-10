@@ -1,0 +1,12 @@
+<?xml version="1.0"?>
+<!--
+/**
+ * Copyright © SPS. All rights reserved.
+ * Licensed under the Open Software License version 3.0 (OSL-3.0), see LICENSE.txt.
+ */
+-->
+<page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" label="Quotation e-mail items" design_abstraction="custom" xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
+    <body>
+        <block class="SPS\Quotation\Block\Email\Items" name="sps.quotation.email.items" cacheable="false"/>
+    </body>
+</page>

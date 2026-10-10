@@ -1,0 +1,29 @@
+<!--@subject {{trans "New shipping quote request %number" number=$quotation_number}} @-->
+<!--@vars {
+"var quotation_number":"Quotation number",
+"var customer_name":"Customer name",
+"var quotation.customer_email":"Customer e-mail",
+"var quotation.customer_phone":"Customer phone",
+"var destination":"Destination",
+"var customer_message":"Customer message",
+"var admin_url":"Admin link",
+"layout handle=\"sps_quotation_email_items\" quotation=$quotation":"Items"
+} @-->
+{{template config_path="design/email/header_template"}}
+
+<p>{{trans "A customer requested a shipping quote."}}</p>
+<table class="sps-quotation-details" style="margin-bottom: 20px;">
+    <tr><th align="left" style="padding-right: 12px;">{{trans "Request"}}</th><td>{{var quotation_number}}</td></tr>
+    <tr><th align="left" style="padding-right: 12px;">{{trans "Name"}}</th><td>{{var customer_name}}</td></tr>
+    <tr><th align="left" style="padding-right: 12px;">{{trans "E-mail"}}</th><td>{{var quotation.customer_email}}</td></tr>
+    <tr><th align="left" style="padding-right: 12px;">{{trans "Phone"}}</th><td>{{var quotation.customer_phone}}</td></tr>
+    {{depend quotation.customer_company}}<tr><th align="left" style="padding-right: 12px;">{{trans "Company"}}</th><td>{{var quotation.customer_company}}</td></tr>{{/depend}}
+    <tr><th align="left" style="padding-right: 12px;">{{trans "Ship to"}}</th><td>{{var destination}}</td></tr>
+</table>
+{{layout handle="sps_quotation_email_items" quotation=$quotation area="frontend"}}
+{{depend customer_message}}
+<p><strong>{{trans "Message"}}</strong><br>{{var customer_message|escape|nl2br}}</p>
+{{/depend}}
+<p><a href="{{var admin_url}}">{{trans "Open the request in the admin"}}</a></p>
+
+{{template config_path="design/email/footer_template"}}

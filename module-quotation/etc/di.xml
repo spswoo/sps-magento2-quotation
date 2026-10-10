@@ -6,6 +6,37 @@
  */
 -->
 <config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">
+    <preference for="SPS\Quotation\Api\Data\QuotationInterface" type="SPS\Quotation\Model\Quotation"/>
+    <preference for="SPS\Quotation\Api\Data\QuotationItemInterface" type="SPS\Quotation\Model\QuotationItem"/>
+    <preference for="SPS\Quotation\Api\QuotationRepositoryInterface" type="SPS\Quotation\Model\QuotationRepository"/>
+
+    <!-- admin grid (Sales > Quotations) -->
+    <type name="Magento\Framework\View\Element\UiComponent\DataProvider\CollectionFactory">
+        <arguments>
+            <argument name="collections" xsi:type="array">
+                <item name="sps_quotation_listing_data_source" xsi:type="string">SPS\Quotation\Model\ResourceModel\Quotation\Grid\Collection</item>
+            </argument>
+        </arguments>
+    </type>
+    <virtualType name="SPS\Quotation\Model\ResourceModel\Quotation\Grid\Collection" type="Magento\Framework\View\Element\UiComponent\DataProvider\SearchResult">
+        <arguments>
+            <argument name="mainTable" xsi:type="string">sps_quotation</argument>
+            <argument name="resourceModel" xsi:type="string">SPS\Quotation\Model\ResourceModel\Quotation</argument>
+        </arguments>
+    </virtualType>
+
+    <!-- checkout links are storefront URLs, also when built in the admin -->
+    <virtualType name="SPS\Quotation\Model\FrontendUrlFactory" type="Magento\Framework\UrlFactory">
+        <arguments>
+            <argument name="instanceName" xsi:type="string">Magento\Framework\Url</argument>
+        </arguments>
+    </virtualType>
+    <type name="SPS\Quotation\Model\QuotationSender">
+        <arguments>
+            <argument name="urlFactory" xsi:type="object">SPS\Quotation\Model\FrontendUrlFactory</argument>
+        </arguments>
+    </type>
+
     <!-- global: storefront, REST/GraphQL and admin-created orders follow the same rule -->
     <type name="Magento\Shipping\Model\Shipping">
         <plugin name="sps_quotation_quote_required_carriers" type="SPS\Quotation\Plugin\Shipping\FilterCarriersForQuoteRequired"/>

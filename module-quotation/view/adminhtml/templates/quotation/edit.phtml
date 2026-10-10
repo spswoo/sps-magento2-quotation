@@ -1,0 +1,449 @@
+<?php
+/**
+ * Copyright © SPS. All rights reserved.
+ * Licensed under the Open Software License version 3.0 (OSL-3.0), see LICENSE.txt.
+ *
+ * Sales > Quotations > editor. Plain form + small vanilla script for item rows (product search, custom options,
+ * live row totals) and the region list.
+ *
+ * @var \Magento\Backend\Block\Template $block
+ * @var \Magento\Framework\Escaper $escaper
+ * @var \Magento\Framework\View\Helper\SecureHtmlRenderer $secureRenderer
+ * @var \SPS\Quotation\ViewModel\Adminhtml\QuotationForm $vm
+ */
+
+use SPS\Quotation\Api\Data\QuotationInterface as Q;
+
+$vm = $block->getData('view_model');
+$quotation = $vm->getQuotation();
+$id = (int) $quotation->getId();
+$locked = $vm->isLocked() || !$vm->isAllowed('SPS_Quotation::manage');
+$status = $quotation->getStatus();
+$canSend = $vm->isAllowed('SPS_Quotation::send') && !$vm->isLocked() && $status !== Q::STATUS_CANCELLED;
+$e = $escaper;
+$field = static fn(string $name): string => 'quotation[' . $name . ']';
+?>
+<style>
+    .sps-quotation .admin__fieldset { margin-bottom: 2.5rem; }
+    .sps-quotation .sps-q-status { display: flex; flex-wrap: wrap; gap: .5rem 2rem; padding: 1rem 1.5rem; margin-bottom: 2rem; background: #f8f8f8; border: 1px solid #e3e3e3; }
+    .sps-quotation .sps-q-status strong { margin-right: .35rem; }
+    .sps-quotation table.data-grid td { vertical-align: top; }
+    .sps-quotation input.qty { width: 70px; text-align: right; }
+    .sps-quotation input.price { width: 110px; text-align: right; }
+    .sps-quotation .row-total { white-space: nowrap; font-weight: 600; text-align: right; }
+    .sps-quotation .sku { color: #666; font-size: 1.2rem; }
+    .sps-quotation .item-option { margin-top: .5rem; }
+    .sps-quotation .item-option label { display: block; font-size: 1.2rem; color: #555; }
+    .sps-quotation .item-option select, .sps-quotation .item-option input { max-width: 320px; }
+    .sps-quotation .sps-q-search { position: relative; max-width: 520px; margin-top: 1rem; }
+    .sps-quotation .sps-q-results { position: absolute; z-index: 20; left: 0; right: 0; background: #fff; border: 1px solid #adadad; max-height: 320px; overflow-y: auto; list-style: none; margin: 0; padding: 0; }
+    .sps-quotation .sps-q-results li { padding: .6rem 1rem; cursor: pointer; }
+    .sps-quotation .sps-q-results li:hover, .sps-quotation .sps-q-results li.active { background: #e5f7fe; }
+    .sps-quotation .sps-q-totals { max-width: 420px; }
+    .sps-quotation .sps-q-totals td { padding: .4rem .8rem; }
+    .sps-quotation .sps-q-totals td:last-child { text-align: right; }
+    .sps-quotation .sps-q-totals tr.grand td { font-weight: 700; border-top: 1px solid #ccc; }
+    .sps-quotation .sps-q-message { white-space: pre-wrap; background: #fffbe6; border: 1px solid #f0dc8a; padding: 1rem; max-width: 760px; }
+</style>
+
+<form class="sps-quotation" id="sps-quotation-form" method="post"
+      action="<?= $e->escapeUrl($vm->url('*/*/save', $id ? ['id' => $id] : [])) ?>">
+    <?= $block->getBlockHtml('formkey') ?>
+    <input type="hidden" name="send" id="sps-q-send" value="0">
+
+    <div class="page-main-actions">
+        <div class="page-actions">
+            <a class="action-default back" href="<?= $e->escapeUrl($vm->url('*/*/')) ?>"><span><?= $e->escapeHtml(__('Back')) ?></span></a>
+            <?php if ($id && $vm->isAllowed('SPS_Quotation::delete') && !$vm->isLocked()): ?>
+                <button type="submit" class="action-default" form="sps-q-delete-form" id="sps-q-delete"><span><?= $e->escapeHtml(__('Delete')) ?></span></button>
+            <?php endif; ?>
+            <?php if ($id && !$locked && !in_array($status, [Q::STATUS_CANCELLED, Q::STATUS_ORDERED], true)): ?>
+                <button type="submit" class="action-default" form="sps-q-cancel-form" id="sps-q-cancel"><span><?= $e->escapeHtml(__('Cancel Quotation')) ?></span></button>
+            <?php endif; ?>
+            <?php if (!$locked): ?>
+                <button type="submit" class="action-default" id="sps-q-save"><span><?= $e->escapeHtml(__('Save')) ?></span></button>
+                <?php if ($canSend): ?>
+                    <button type="submit" class="action-primary" id="sps-q-save-send">
+                        <span><?= $e->escapeHtml($status === Q::STATUS_SENT ? __('Save & Send Again') : __('Save & Send to Customer')) ?></span>
+                    </button>
+                <?php endif; ?>
+            <?php endif; ?>
+        </div>
+    </div>
+
+    <?php if ($id): ?>
+        <div class="sps-q-status">
+            <span><strong><?= $e->escapeHtml(__('Quotation')) ?></strong><?= $e->escapeHtml($quotation->getIncrementId()) ?></span>
+            <span><strong><?= $e->escapeHtml(__('Status')) ?></strong><?= $e->escapeHtml($vm->getStatusLabel()) ?></span>
+            <span><strong><?= $e->escapeHtml(__('Created')) ?></strong><?= $e->escapeHtml($vm->get(Q::CREATED_AT)) ?></span>
+            <?php if ($vm->get(Q::SENT_AT)): ?>
+                <span><strong><?= $e->escapeHtml(__('Last sent')) ?></strong><?= $e->escapeHtml($vm->get(Q::SENT_AT)) ?></span>
+            <?php endif; ?>
+            <?php if ($quotation->getCustomerId()): ?>
+                <span><strong><?= $e->escapeHtml(__('Customer account')) ?></strong>
+                    <a href="<?= $e->escapeUrl($vm->url('customer/index/edit', ['id' => $quotation->getCustomerId()])) ?>">#<?= (int) $quotation->getCustomerId() ?></a></span>
+            <?php else: ?>
+                <span><strong><?= $e->escapeHtml(__('Customer account')) ?></strong><?= $e->escapeHtml(__('Guest')) ?></span>
+            <?php endif; ?>
+        </div>
+    <?php endif; ?>
+
+    <?php if ($vm->get(Q::CUSTOMER_MESSAGE) !== ''): ?>
+        <fieldset class="admin__fieldset">
+            <legend class="admin__legend"><span><?= $e->escapeHtml(__('Message from the customer')) ?></span></legend>
+            <div class="sps-q-message"><?= $e->escapeHtml($vm->get(Q::CUSTOMER_MESSAGE)) ?></div>
+        </fieldset>
+    <?php endif; ?>
+
+    <fieldset class="admin__fieldset" <?= $locked ? 'disabled' : '' ?>>
+        <legend class="admin__legend"><span><?= $e->escapeHtml(__('Customer')) ?></span></legend>
+        <div class="admin__field _required">
+            <label class="admin__field-label" for="q-store"><span><?= $e->escapeHtml(__('Store View')) ?></span></label>
+            <div class="admin__field-control">
+                <select class="admin__control-select" id="q-store" name="<?= $e->escapeHtmlAttr($field(Q::STORE_ID)) ?>">
+                    <?php foreach ($vm->getStores() as $storeId => $label): ?>
+                        <option value="<?= (int) $storeId ?>" <?= (int) $quotation->getStoreId() === $storeId ? 'selected' : '' ?>><?= $e->escapeHtml($label) ?></option>
+                    <?php endforeach; ?>
+                </select>
+            </div>
+        </div>
+        <?php foreach ([
+            Q::CUSTOMER_EMAIL => [__('E-mail'), 'email', true],
+            Q::CUSTOMER_FIRSTNAME => [__('First Name'), 'text', true],
+            Q::CUSTOMER_LASTNAME => [__('Last Name'), 'text', true],
+            Q::CUSTOMER_PHONE => [__('Phone'), 'tel', false],
+            Q::CUSTOMER_COMPANY => [__('Company'), 'text', false],
+        ] as $name => [$label, $type, $required]): ?>
+            <div class="admin__field <?= $required ? '_required' : '' ?>">
+                <label class="admin__field-label" for="q-<?= $e->escapeHtmlAttr($name) ?>"><span><?= $e->escapeHtml($label) ?></span></label>
+                <div class="admin__field-control">
+                    <input class="admin__control-text" type="<?= $e->escapeHtmlAttr($type) ?>" id="q-<?= $e->escapeHtmlAttr($name) ?>"
+                           name="<?= $e->escapeHtmlAttr($field($name)) ?>" value="<?= $e->escapeHtmlAttr($vm->get($name)) ?>" <?= $required ? 'required' : '' ?>>
+                    <?php if ($name === Q::CUSTOMER_EMAIL): ?>
+                        <div class="admin__field-note"><?= $e->escapeHtml(__('If a customer account with this e-mail exists on the store\'s website, the quotation is linked to it; otherwise the customer checks out as a guest.')) ?></div>
+                    <?php endif; ?>
+                </div>
+            </div>
+        <?php endforeach; ?>
+    </fieldset>
+
+    <fieldset class="admin__fieldset" <?= $locked ? 'disabled' : '' ?>>
+        <legend class="admin__legend"><span><?= $e->escapeHtml(__('Ship To')) ?></span></legend>
+        <div class="admin__field _required">
+            <label class="admin__field-label" for="q-country"><span><?= $e->escapeHtml(__('Country')) ?></span></label>
+            <div class="admin__field-control">
+                <select class="admin__control-select" id="q-country" name="<?= $e->escapeHtmlAttr($field(Q::DEST_COUNTRY_ID)) ?>">
+                    <option value=""><?= $e->escapeHtml(__('-- Please Select --')) ?></option>
+                    <?php foreach ($vm->getCountries() as $country): ?>
+                        <option value="<?= $e->escapeHtmlAttr($country['value']) ?>" <?= $vm->get(Q::DEST_COUNTRY_ID) === $country['value'] ? 'selected' : '' ?>><?= $e->escapeHtml($country['label']) ?></option>
+                    <?php endforeach; ?>
+                </select>
+            </div>
+        </div>
+        <div class="admin__field">
+            <label class="admin__field-label" for="q-region"><span><?= $e->escapeHtml(__('State / Province')) ?></span></label>
+            <div class="admin__field-control">
+                <select class="admin__control-select" id="q-region-id" name="<?= $e->escapeHtmlAttr($field(Q::DEST_REGION_ID)) ?>"
+                        data-value="<?= $e->escapeHtmlAttr($vm->get(Q::DEST_REGION_ID)) ?>" hidden></select>
+                <input class="admin__control-text" id="q-region" name="<?= $e->escapeHtmlAttr($field(Q::DEST_REGION)) ?>" value="<?= $e->escapeHtmlAttr($vm->get(Q::DEST_REGION)) ?>">
+                <div class="admin__field-note"><?= $e->escapeHtml(__('Used for the tax estimate.')) ?></div>
+            </div>
+        </div>
+        <div class="admin__field _required">
+            <label class="admin__field-label" for="q-postcode"><span><?= $e->escapeHtml(__('Postal / ZIP Code')) ?></span></label>
+            <div class="admin__field-control">
+                <input class="admin__control-text" id="q-postcode" name="<?= $e->escapeHtmlAttr($field(Q::DEST_POSTCODE)) ?>" value="<?= $e->escapeHtmlAttr($vm->get(Q::DEST_POSTCODE)) ?>">
+                <div class="admin__field-note"><?= $e->escapeHtml(__('The freight price only applies to this postal code and country at checkout.')) ?></div>
+            </div>
+        </div>
+        <div class="admin__field">
+            <label class="admin__field-label" for="q-city"><span><?= $e->escapeHtml(__('City')) ?></span></label>
+            <div class="admin__field-control">
+                <input class="admin__control-text" id="q-city" name="<?= $e->escapeHtmlAttr($field(Q::DEST_CITY)) ?>" value="<?= $e->escapeHtmlAttr($vm->get(Q::DEST_CITY)) ?>">
+            </div>
+        </div>
+        <div class="admin__field">
+            <label class="admin__field-label" for="q-street"><span><?= $e->escapeHtml(__('Street Address')) ?></span></label>
+            <div class="admin__field-control">
+                <textarea class="admin__control-textarea" id="q-street" rows="2" name="<?= $e->escapeHtmlAttr($field(Q::DEST_STREET)) ?>"><?= $e->escapeHtml($vm->get(Q::DEST_STREET)) ?></textarea>
+                <div class="admin__field-note"><?= $e->escapeHtml(__('Optional; pre-fills the checkout address.')) ?></div>
+            </div>
+        </div>
+    </fieldset>
+
+    <fieldset class="admin__fieldset" <?= $locked ? 'disabled' : '' ?>>
+        <legend class="admin__legend"><span><?= $e->escapeHtml(__('Items')) ?></span></legend>
+        <table class="data-grid" id="sps-q-items">
+            <thead>
+            <tr>
+                <th class="data-grid-th"><?= $e->escapeHtml(__('Product')) ?></th>
+                <th class="data-grid-th"><?= $e->escapeHtml(__('Qty')) ?></th>
+                <th class="data-grid-th"><?= $e->escapeHtml(__('Catalog Price')) ?></th>
+                <th class="data-grid-th"><?= $e->escapeHtml(__('Quoted Unit Price')) ?></th>
+                <th class="data-grid-th"><?= $e->escapeHtml(__('Row Total')) ?></th>
+                <th class="data-grid-th"></th>
+            </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+        <?php if (!$locked): ?>
+            <div class="sps-q-search">
+                <label class="admin__field-label" for="sps-q-search-input"><span><?= $e->escapeHtml(__('Add product')) ?></span></label>
+                <input class="admin__control-text" id="sps-q-search-input" type="search" autocomplete="off"
+                       placeholder="<?= $e->escapeHtmlAttr(__('Search by SKU or name')) ?>" aria-controls="sps-q-results" aria-autocomplete="list">
+                <ul class="sps-q-results" id="sps-q-results" role="listbox" hidden></ul>
+            </div>
+        <?php endif; ?>
+    </fieldset>
+
+    <fieldset class="admin__fieldset" <?= $locked ? 'disabled' : '' ?>>
+        <legend class="admin__legend"><span><?= $e->escapeHtml(__('Freight and Validity')) ?></span></legend>
+        <div class="admin__field _required">
+            <label class="admin__field-label" for="q-freight"><span><?= $e->escapeHtml(__('Freight Charge')) ?></span></label>
+            <div class="admin__field-control">
+                <input class="admin__control-text price" id="q-freight" inputmode="decimal" name="<?= $e->escapeHtmlAttr($field(Q::FREIGHT_AMOUNT)) ?>"
+                       value="<?= $quotation->getFreightAmount() === null ? '' : $e->escapeHtmlAttr(number_format((float) $quotation->getFreightAmount(), 2, '.', '')) ?>">
+                <div class="admin__field-note"><?= $e->escapeHtml(__('Excluding tax unless your store enters shipping prices including tax. 0 = free shipping.')) ?></div>
+            </div>
+        </div>
+        <div class="admin__field">
+            <label class="admin__field-label" for="q-freight-label"><span><?= $e->escapeHtml(__('Freight Label')) ?></span></label>
+            <div class="admin__field-control">
+                <input class="admin__control-text" id="q-freight-label" name="<?= $e->escapeHtmlAttr($field(Q::FREIGHT_LABEL)) ?>" value="<?= $e->escapeHtmlAttr($vm->get(Q::FREIGHT_LABEL)) ?>">
+                <div class="admin__field-note"><?= $e->escapeHtml(__('Shown as the shipping method at checkout, e.g. "Freight – curbside delivery".')) ?></div>
+            </div>
+        </div>
+        <div class="admin__field">
+            <label class="admin__field-label" for="q-expires"><span><?= $e->escapeHtml(__('Valid Until')) ?></span></label>
+            <div class="admin__field-control">
+                <input class="admin__control-text" id="q-expires" type="date" name="<?= $e->escapeHtmlAttr($field(Q::EXPIRES_AT)) ?>" value="<?= $e->escapeHtmlAttr((string) $quotation->getExpiresAt()) ?>">
+                <div class="admin__field-note"><?= $e->escapeHtml(__('Empty = set automatically when the quotation is sent.')) ?></div>
+            </div>
+        </div>
+    </fieldset>
+
+    <?php if ($id): ?>
+        <fieldset class="admin__fieldset">
+            <legend class="admin__legend"><span><?= $e->escapeHtml(__('Totals (as last saved)')) ?></span></legend>
+            <table class="sps-q-totals">
+                <tr><td><?= $e->escapeHtml(__('Subtotal')) ?></td><td><?= $e->escapeHtml($vm->formatPrice((float) $vm->get(Q::SUBTOTAL))) ?></td></tr>
+                <tr><td><?= $e->escapeHtml($vm->get(Q::FREIGHT_LABEL) ?: __('Freight')) ?></td><td><?= $e->escapeHtml($vm->formatPrice($quotation->getFreightAmount())) ?></td></tr>
+                <tr><td><?= $e->escapeHtml(__('Estimated Tax')) ?></td><td><?= $e->escapeHtml($vm->formatPrice((float) $vm->get(Q::TAX_AMOUNT))) ?></td></tr>
+                <tr class="grand"><td><?= $e->escapeHtml(__('Estimated Total')) ?></td><td><?= $e->escapeHtml($vm->formatPrice((float) $vm->get(Q::GRAND_TOTAL))) ?></td></tr>
+            </table>
+            <div class="admin__field-note"><?= $e->escapeHtml(__('Tax is estimated for the destination with your store\'s tax rules; the checkout charges the tax for the address the customer enters.')) ?></div>
+        </fieldset>
+    <?php endif; ?>
+
+    <fieldset class="admin__fieldset" <?= $locked ? 'disabled' : '' ?>>
+        <legend class="admin__legend"><span><?= $e->escapeHtml(__('Internal Note')) ?></span></legend>
+        <div class="admin__field">
+            <label class="admin__field-label" for="q-note"><span><?= $e->escapeHtml(__('Staff Note')) ?></span></label>
+            <div class="admin__field-control">
+                <textarea class="admin__control-textarea" id="q-note" rows="3" name="<?= $e->escapeHtmlAttr($field(Q::STAFF_NOTE)) ?>"><?= $e->escapeHtml($vm->get(Q::STAFF_NOTE)) ?></textarea>
+                <div class="admin__field-note"><?= $e->escapeHtml(__('Not shown to the customer.')) ?></div>
+            </div>
+        </div>
+    </fieldset>
+</form>
+
+<?php if ($id): ?>
+    <form id="sps-q-cancel-form" method="post" action="<?= $e->escapeUrl($vm->url('*/*/cancel', ['id' => $id])) ?>"><?= $block->getBlockHtml('formkey') ?></form>
+    <form id="sps-q-delete-form" method="post" action="<?= $e->escapeUrl($vm->url('*/*/delete', ['id' => $id])) ?>"><?= $block->getBlockHtml('formkey') ?></form>
+<?php endif; ?>
+
+<?php
+$config = $vm->getJsConfig();
+$texts = json_encode([
+    'remove' => (string) __('Remove'),
+    'none' => (string) __('No products found.'),
+    'choose' => (string) __('-- Please Select --'),
+    'required' => (string) __('required'),
+    'confirmSend' => (string) __('Save and e-mail this quotation to the customer?'),
+    'confirmCancel' => (string) __('Cancel this quotation? The customer\'s checkout link will stop working.'),
+    'confirmDelete' => (string) __('Delete this quotation permanently?'),
+    'empty' => (string) __('No items yet — search for a product below.'),
+], JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT);
+$script = <<<JS
+(() => {
+    const cfg = {$config};
+    const t = {$texts};
+    const form = document.getElementById('sps-quotation-form');
+    const body = document.querySelector('#sps-q-items tbody');
+    const storeSelect = document.getElementById('q-store');
+    let index = 0;
+
+    const el = (tag, attrs = {}, text = null) => {
+        const node = document.createElement(tag);
+        Object.entries(attrs).forEach(([k, v]) => { if (v !== null && v !== false) node.setAttribute(k, v === true ? '' : v); });
+        if (text !== null) node.textContent = text;
+        return node;
+    };
+    const money = (n) => (isFinite(n) ? n : 0).toFixed(2);
+
+    const updateRow = (tr) => {
+        const qty = parseFloat(tr.querySelector('input.qty').value) || 0;
+        const price = parseFloat(tr.querySelector('input.price').value);
+        tr.querySelector('.row-total').textContent = isNaN(price) ? '' : money(qty * price);
+    };
+    const updateEmpty = () => {
+        const empty = body.querySelector('tr.empty');
+        const rows = body.querySelectorAll('tr.item').length;
+        if (!rows && !empty) {
+            const tr = el('tr', { class: 'empty' });
+            tr.appendChild(el('td', { colspan: '6' }, t.empty));
+            body.appendChild(tr);
+        } else if (rows && empty) {
+            empty.remove();
+        }
+    };
+
+    const optionControl = (def, name, current) => {
+        const wrap = el('div', { class: 'item-option' });
+        const id = 'opt-' + index + '-' + def.id;
+        wrap.appendChild(el('label', { for: id }, def.title + (def.required ? ' (' + t.required + ')' : '')));
+        if (def.type === 'field' || def.type === 'area') {
+            const input = el(def.type === 'area' ? 'textarea' : 'input', { id, name, class: 'admin__control-text' });
+            input.value = current ?? '';
+            wrap.appendChild(input);
+            return wrap;
+        }
+        const multiple = def.type === 'checkbox' || def.type === 'multiple';
+        const select = el('select', { id, name: name + (multiple ? '[]' : ''), class: 'admin__control-select', multiple });
+        if (!multiple) { select.appendChild(el('option', { value: '' }, t.choose)); }
+        const chosen = [].concat(current ?? []).map(String);
+        def.values.forEach((v) => {
+            const o = el('option', { value: String(v.id) }, v.title);
+            o.selected = chosen.includes(String(v.id));
+            select.appendChild(o);
+        });
+        wrap.appendChild(select);
+        return wrap;
+    };
+
+    const addRow = (item) => {
+        const i = index++;
+        const prefix = 'items[' + i + ']';
+        const tr = el('tr', { class: 'item' });
+        const product = el('td');
+        product.appendChild(el('input', { type: 'hidden', name: prefix + '[product_id]', value: String(item.product_id) }));
+        product.appendChild(el('input', { type: 'hidden', name: prefix + '[original_price]', value: item.original_price ?? '' }));
+        product.appendChild(el('div', {}, item.name));
+        product.appendChild(el('div', { class: 'sku' }, item.sku));
+        (item.definitions || []).forEach((def) => {
+            product.appendChild(optionControl(def, prefix + '[options][' + def.id + ']', (item.options || {})[def.id]));
+        });
+        const qty = el('td');
+        qty.appendChild(el('input', { class: 'admin__control-text qty', name: prefix + '[qty]', value: String(item.qty ?? 1), inputmode: 'decimal', required: true }));
+        const catalog = el('td', {}, item.original_price !== null && item.original_price !== undefined ? money(parseFloat(item.original_price)) : '');
+        const price = el('td');
+        price.appendChild(el('input', { class: 'admin__control-text price', name: prefix + '[price]', value: item.price === null || item.price === undefined ? '' : money(parseFloat(item.price)), inputmode: 'decimal' }));
+        const total = el('td', { class: 'row-total' });
+        const actions = el('td');
+        if (!cfg.locked) {
+            const remove = el('button', { type: 'button', class: 'action-default' }, t.remove);
+            remove.addEventListener('click', () => { tr.remove(); updateEmpty(); });
+            actions.appendChild(remove);
+        }
+        [product, qty, catalog, price, total, actions].forEach((td) => tr.appendChild(td));
+        tr.addEventListener('input', () => updateRow(tr));
+        body.appendChild(tr);
+        updateRow(tr);
+        updateEmpty();
+    };
+
+    cfg.items.forEach(addRow);
+    updateEmpty();
+
+    // product search
+    const search = document.getElementById('sps-q-search-input');
+    const results = document.getElementById('sps-q-results');
+    let timer = null;
+    let found = [];
+    const closeResults = () => { results.hidden = true; results.innerHTML = ''; };
+    if (search) {
+        search.addEventListener('input', () => {
+            clearTimeout(timer);
+            const q = search.value.trim();
+            if (q.length < 2) { closeResults(); return; }
+            timer = setTimeout(async () => {
+                const url = new URL(cfg.searchUrl, window.location.href);
+                url.searchParams.set('q', q);
+                url.searchParams.set('store_id', storeSelect.value);
+                url.searchParams.set('isAjax', 'true');
+                url.searchParams.set('form_key', window.FORM_KEY || '');
+                const response = await fetch(url, { credentials: 'same-origin', headers: { 'X-Requested-With': 'XMLHttpRequest' } });
+                const data = response.ok ? await response.json() : { items: [] };
+                found = data.items || [];
+                results.innerHTML = '';
+                if (!found.length) {
+                    results.appendChild(el('li', { role: 'option', 'aria-disabled': 'true' }, t.none));
+                }
+                found.forEach((p, n) => {
+                    const li = el('li', { role: 'option', 'data-index': String(n) }, p.name + ' — ' + p.sku + ' (' + money(p.original_price) + ')');
+                    li.addEventListener('click', () => {
+                        addRow({ ...p, qty: 1, price: null, options: {} });
+                        search.value = '';
+                        closeResults();
+                    });
+                    results.appendChild(li);
+                });
+                results.hidden = false;
+            }, 250);
+        });
+        search.addEventListener('keydown', (event) => { if (event.key === 'Escape') { closeResults(); } });
+        document.addEventListener('click', (event) => { if (!event.target.closest('.sps-q-search')) { closeResults(); } });
+    }
+
+    // regions
+    const country = document.getElementById('q-country');
+    const regionSelect = document.getElementById('q-region-id');
+    const regionText = document.getElementById('q-region');
+    const refreshRegions = () => {
+        const list = cfg.regions[country.value] || [];
+        regionSelect.innerHTML = '';
+        if (!list.length) {
+            regionSelect.hidden = true;
+            regionText.hidden = false;
+            return;
+        }
+        regionSelect.appendChild(el('option', { value: '' }, t.choose));
+        list.forEach((r) => {
+            const o = el('option', { value: String(r.id) }, r.name);
+            o.selected = String(r.id) === regionSelect.dataset.value;
+            regionSelect.appendChild(o);
+        });
+        regionSelect.hidden = false;
+        regionText.hidden = true;
+    };
+    country.addEventListener('change', () => { regionSelect.dataset.value = ''; refreshRegions(); });
+    regionSelect.addEventListener('change', () => {
+        regionSelect.dataset.value = regionSelect.value;
+        regionText.value = regionSelect.value ? regionSelect.options[regionSelect.selectedIndex].text : '';
+    });
+    refreshRegions();
+
+    // buttons
+    const sendButton = document.getElementById('sps-q-save-send');
+    if (sendButton) {
+        sendButton.addEventListener('click', (event) => {
+            if (!window.confirm(t.confirmSend)) { event.preventDefault(); return; }
+            document.getElementById('sps-q-send').value = '1';
+        });
+    }
+    const saveButton = document.getElementById('sps-q-save');
+    if (saveButton) {
+        saveButton.addEventListener('click', () => { document.getElementById('sps-q-send').value = '0'; });
+    }
+    const cancelButton = document.getElementById('sps-q-cancel');
+    if (cancelButton) {
+        cancelButton.addEventListener('click', (event) => { if (!window.confirm(t.confirmCancel)) { event.preventDefault(); } });
+    }
+    const deleteButton = document.getElementById('sps-q-delete');
+    if (deleteButton) {
+        deleteButton.addEventListener('click', (event) => { if (!window.confirm(t.confirmDelete)) { event.preventDefault(); } });
+    }
+})();
+JS;
+?>
+<?= /* @noEscape */ $secureRenderer->renderTag('script', [], $script, false) ?>

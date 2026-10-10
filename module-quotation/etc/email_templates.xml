@@ -1,0 +1,12 @@
+<?xml version="1.0"?>
+<!--
+/**
+ * Copyright © SPS. All rights reserved.
+ * Licensed under the Open Software License version 3.0 (OSL-3.0), see LICENSE.txt.
+ */
+-->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Email:etc/email_templates.xsd">
+    <template id="sps_quotation_email_request_staff_template" label="Quotation request (to staff)" file="request_staff.html" type="html" module="SPS_Quotation" area="frontend"/>
+    <template id="sps_quotation_email_request_customer_template" label="Quotation request received (to customer)" file="request_customer.html" type="html" module="SPS_Quotation" area="frontend"/>
+    <template id="sps_quotation_email_quotation_template" label="Your quotation (to customer)" file="quotation.html" type="html" module="SPS_Quotation" area="frontend"/>
+</config>

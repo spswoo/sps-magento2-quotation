@@ -1,0 +1,49 @@
+<?php
+/**
+ * Copyright © SPS. All rights reserved.
+ * Licensed under the Open Software License version 3.0 (OSL-3.0), see LICENSE.txt.
+ *
+ * @var \SPS\Quotation\Block\Email\Items $block
+ * @var \Magento\Framework\Escaper $escaper
+ */
+$rows = $block->getRows();
+if (!$rows) {
+    return;
+}
+$prices = $block->hasPrices();
+?>
+<table class="email-items" style="width: 100%; margin-bottom: 20px;">
+    <thead>
+    <tr>
+        <th class="item-info" align="left"><?= $escaper->escapeHtml(__('Item')) ?></th>
+        <th class="item-qty" align="center"><?= $escaper->escapeHtml(__('Qty')) ?></th>
+        <?php if ($prices): ?>
+            <th class="item-price" align="right"><?= $escaper->escapeHtml(__('Price')) ?></th>
+            <th class="item-price" align="right"><?= $escaper->escapeHtml(__('Total')) ?></th>
+        <?php endif; ?>
+    </tr>
+    </thead>
+    <tbody>
+    <?php foreach ($rows as $row): ?>
+        <tr>
+            <td class="item-info">
+                <p class="product-name"><?= $escaper->escapeHtml($row['name']) ?></p>
+                <p class="sku"><?= $escaper->escapeHtml(__('SKU')) ?>: <?= $escaper->escapeHtml($row['sku']) ?></p>
+                <?php if ($row['options']): ?>
+                    <dl class="item-options">
+                        <?php foreach ($row['options'] as $option): ?>
+                            <dt><strong><em><?= $escaper->escapeHtml($option['label']) ?></em></strong></dt>
+                            <dd><?= $escaper->escapeHtml($option['value']) ?></dd>
+                        <?php endforeach; ?>
+                    </dl>
+                <?php endif; ?>
+            </td>
+            <td class="item-qty" align="center"><?= (float) $row['qty'] ?></td>
+            <?php if ($prices): ?>
+                <td class="item-price" align="right"><?= $escaper->escapeHtml($row['price']) ?></td>
+                <td class="item-price" align="right"><?= $escaper->escapeHtml($row['row_total']) ?></td>
+            <?php endif; ?>
+        </tr>
+    <?php endforeach; ?>
+    </tbody>
+</table>
