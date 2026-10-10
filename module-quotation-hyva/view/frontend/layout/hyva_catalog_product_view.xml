@@ -1,0 +1,19 @@
+<?xml version="1.0"?>
+<!--
+/**
+ * Copyright © SPS. All rights reserved.
+ * Licensed under the Open Software License version 3.0 (OSL-3.0), see LICENSE.txt.
+ */
+-->
+<!-- hyva_ handle: only applied on Hyvä themes -->
+<page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
+    <body>
+        <referenceContainer name="product.info.additional">
+            <block class="Magento\Catalog\Block\Product\View" name="sps.quotation.quote.required.product" template="SPS_QuotationHyva::quote-required/notice.phtml" before="-">
+                <arguments>
+                    <argument name="context" xsi:type="string">product</argument>
+                </arguments>
+            </block>
+        </referenceContainer>
+    </body>
+</page>

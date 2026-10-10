@@ -1,0 +1,13 @@
+<?xml version="1.0"?>
+<!--
+/**
+ * Copyright © SPS. All rights reserved.
+ * Licensed under the Open Software License version 3.0 (OSL-3.0), see LICENSE.txt.
+ */
+-->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:Event/etc/events.xsd">
+    <!-- include this module's templates in every Hyvä theme's Tailwind build -->
+    <event name="hyva_config_generate_before">
+        <observer name="sps_quotation_hyva_config" instance="SPS\QuotationHyva\Observer\HyvaConfigGenerateBefore"/>
+    </event>
+</config>

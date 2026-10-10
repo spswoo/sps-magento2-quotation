@@ -1,0 +1,46 @@
+<?php
+/**
+ * Copyright © SPS. All rights reserved.
+ * Licensed under the Open Software License version 3.0 (OSL-3.0), see LICENSE.txt.
+ *
+ * "Shipping quote required" notice. Block argument "context":
+ *  - product  : product page (product.info.additional)
+ *  - cart     : cart page (checkout.cart.form.before)
+ *  - checkout : Hyvä Checkout shipping step (it hides unavailable rates, so the notice carrier's explanation
+ *               would otherwise not be shown) — used by SPS_QuotationHyvaCheckout
+ */
+declare(strict_types=1);
+
+use Hyva\Theme\Model\ViewModelRegistry;
+use Hyva\Theme\ViewModel\LucideIcons;
+use Magento\Framework\Escaper;
+use Magento\Framework\View\Element\Template;
+use SPS\Quotation\ViewModel\QuoteRequiredNotice;
+
+/** @var Template $block */
+/** @var Escaper $escaper */
+/** @var ViewModelRegistry $viewModels */
+
+$notice = $viewModels->require(QuoteRequiredNotice::class);
+$context = (string) $block->getData('context');
+$linkClass = 'font-semibold underline';
+if ($context === 'cart') {
+    $html = $notice->getCartMessageHtml($linkClass);
+} elseif ($context === 'checkout') {
+    $html = $notice->getCheckoutMessageHtml($linkClass);
+} else {
+    /** @var \Magento\Catalog\Block\Product\View $block */
+    $html = $notice->getProductMessageHtml($block->getProduct(), $linkClass);
+}
+if ($html === '') {
+    return;
+}
+$icons = $viewModels->require(LucideIcons::class);
+?>
+<div class="<?= $context === 'product' ? 'my-4' : 'mb-6' ?> flex gap-3 rounded-md border border-amber-300 bg-amber-50 p-4 text-sm leading-relaxed text-amber-950" role="note">
+    <span class="shrink-0 text-amber-700"><?= $icons->truckHtml('', 22, 22, ['aria-hidden' => 'true']) ?></span>
+    <p>
+        <strong class="block text-base"><?= $escaper->escapeHtml(__('Shipping quote required')) ?></strong>
+        <?= /* @noEscape — escaped in QuoteRequiredNotice, phone/e-mail links added */ $html ?>
+    </p>
+</div>

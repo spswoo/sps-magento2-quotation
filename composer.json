@@ -1,0 +1,18 @@
+{
+    "name": "sps/magento2-quotation-dev",
+    "description": "Development tooling for the sps/module-quotation* packages (not installed into Magento).",
+    "type": "project",
+    "license": "OSL-3.0",
+    "require-dev": {
+        "magento/magento-coding-standard": "^38"
+    },
+    "config": {
+        "allow-plugins": {
+            "dealerdirect/phpcodesniffer-composer-installer": true
+        }
+    },
+    "scripts": {
+        "lint": "for f in $(find module-* -name '*.php' -o -name '*.phtml'); do php -l \"$f\" >/dev/null || exit 1; done",
+        "cs": "phpcs"
+    }
+}

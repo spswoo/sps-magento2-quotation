@@ -1,0 +1,16 @@
+{
+    "name": "sps/module-quotation-hyva",
+    "description": "Hyvä theme integration for sps/module-quotation (product-page and cart notices, quote request form).",
+    "type": "magento2-module",
+    "license": "OSL-3.0",
+    "keywords": ["magento2", "mage-os", "hyva", "quotation", "request a quote"],
+    "require": {
+        "php": "~8.1.0||~8.2.0||~8.3.0||~8.4.0",
+        "sps/module-quotation": "*",
+        "hyva-themes/magento2-theme-module": "^1.3"
+    },
+    "autoload": {
+        "files": ["registration.php"],
+        "psr-4": {"SPS\\QuotationHyva\\": ""}
+    }
+}

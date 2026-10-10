@@ -1,0 +1,11 @@
+<?xml version="1.0"?>
+<ruleset name="SPS Quotation">
+    <description>Magento 2 coding standard for the SPS Quotation modules.</description>
+    <file>module-quotation</file>
+    <file>module-quotation-hyva</file>
+    <file>module-quotation-hyva-checkout</file>
+    <arg name="extensions" value="php,phtml"/>
+    <arg name="colors"/>
+    <arg value="sp"/>
+    <rule ref="Magento2"/>
+</ruleset>

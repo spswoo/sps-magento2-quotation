@@ -1,0 +1,42 @@
+<?xml version="1.0"?>
+<!--
+/**
+ * Copyright © SPS. All rights reserved.
+ * Licensed under the Open Software License version 3.0 (OSL-3.0), see LICENSE.txt.
+ */
+-->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Config:etc/system_file.xsd">
+    <system>
+        <section id="carriers">
+            <group id="spsquote" translate="label comment" sortOrder="7" showInDefault="1" showInWebsite="1" showInStore="1">
+                <label>Shipping Quote Required (SPS Quotation)</label>
+                <comment><![CDATA[Products with <strong>Shipping Quote Required = Yes</strong> (product form) hide all shipping methods except the ones allowed below, and show the explanation messages. Placeholders: {products}, {phone} (Stores > Configuration > General > Store Information), {email} (Store Email Addresses > General Contact).]]></comment>
+                <field id="active" translate="label" type="select" sortOrder="10" showInDefault="1" showInWebsite="1">
+                    <label>Enabled</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
+                <field id="title" translate="label" type="text" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Title</label>
+                </field>
+                <field id="allowed_carriers" translate="label comment" type="multiselect" sortOrder="30" showInDefault="1" showInWebsite="1">
+                    <label>Shipping Methods Still Offered</label>
+                    <source_model>SPS\Quotation\Model\Config\Source\Carriers</source_model>
+                    <comment>For example store pickup, or an admin-only custom shipping price method so staff can enter quoted freight on phone orders.</comment>
+                    <can_be_empty>1</can_be_empty>
+                </field>
+                <field id="checkout_message" translate="label" type="textarea" sortOrder="40" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Checkout Message</label>
+                </field>
+                <field id="cart_message" translate="label" type="textarea" sortOrder="50" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Cart Page Message</label>
+                </field>
+                <field id="product_message" translate="label" type="textarea" sortOrder="60" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Product Page Message</label>
+                </field>
+                <field id="sort_order" translate="label" type="text" sortOrder="90" showInDefault="1" showInWebsite="1">
+                    <label>Sort Order</label>
+                </field>
+            </group>
+        </section>
+    </system>
+</config>

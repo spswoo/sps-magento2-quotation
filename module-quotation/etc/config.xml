@@ -1,0 +1,27 @@
+<?xml version="1.0"?>
+<!--
+/**
+ * Copyright © SPS. All rights reserved.
+ * Licensed under the Open Software License version 3.0 (OSL-3.0), see LICENSE.txt.
+ */
+-->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Store:etc/config.xsd">
+    <default>
+        <carriers>
+            <!-- "Quote required" notice carrier: never offers a rate, only explains why shipping must be quoted -->
+            <spsquote>
+                <model>SPS\Quotation\Model\Carrier\QuoteRequired</model>
+                <active>1</active>
+                <title>Shipping quote required</title>
+                <sallowspecific>0</sallowspecific>
+                <showmethod>1</showmethod>
+                <sort_order>999</sort_order>
+                <!-- carrier codes still offered when the cart needs a quote, e.g. store pickup -->
+                <allowed_carriers/>
+                <checkout_message>Shipping for {products} needs a quote from our team. Please contact us at {phone} or {email}.</checkout_message>
+                <product_message>Shipping for this item is quoted by our team. Contact us at {phone} or {email} for a shipping quote.</product_message>
+                <cart_message>Your cart contains items that need a shipping quote: {products}. Contact us at {phone} or {email}.</cart_message>
+            </spsquote>
+        </carriers>
+    </default>
+</config>

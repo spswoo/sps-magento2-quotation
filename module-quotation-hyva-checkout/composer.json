@@ -1,0 +1,16 @@
+{
+    "name": "sps/module-quotation-hyva-checkout",
+    "description": "Hyvä Checkout integration for sps/module-quotation (quote-required and quotation notices in the shipping step).",
+    "type": "magento2-module",
+    "license": "OSL-3.0",
+    "keywords": ["magento2", "mage-os", "hyva", "hyva-checkout", "quotation"],
+    "require": {
+        "php": "~8.1.0||~8.2.0||~8.3.0||~8.4.0",
+        "sps/module-quotation-hyva": "*",
+        "hyva-themes/magento2-hyva-checkout": "^1.1"
+    },
+    "autoload": {
+        "files": ["registration.php"],
+        "psr-4": {"SPS\\QuotationHyvaCheckout\\": ""}
+    }
+}

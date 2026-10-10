@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+<!--
+/**
+ * Copyright © SPS. All rights reserved.
+ * Licensed under the Open Software License version 3.0 (OSL-3.0), see LICENSE.txt.
+ */
+-->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:Module/etc/module.xsd">
+    <module name="SPS_Quotation">
+        <sequence>
+            <module name="Magento_Catalog"/>
+            <module name="Magento_Checkout"/>
+            <module name="Magento_Quote"/>
+            <module name="Magento_Shipping"/>
+        </sequence>
+    </module>
+</config>

@@ -1,0 +1,19 @@
+<?xml version="1.0"?>
+<!--
+/**
+ * Copyright © SPS. All rights reserved.
+ * Licensed under the Open Software License version 3.0 (OSL-3.0), see LICENSE.txt.
+ */
+-->
+<page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
+    <body>
+        <!-- Hyvä Checkout drops shipping rates that return an error (incl. the spsquote explanation) → show it above the methods -->
+        <referenceContainer name="checkout.shipping.methods.before">
+            <block name="sps.quotation.quote.required.checkout" template="SPS_QuotationHyva::quote-required/notice.phtml">
+                <arguments>
+                    <argument name="context" xsi:type="string">checkout</argument>
+                </arguments>
+            </block>
+        </referenceContainer>
+    </body>
+</page>

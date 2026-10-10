@@ -1,0 +1,19 @@
+<?xml version="1.0"?>
+<!--
+/**
+ * Copyright © SPS. All rights reserved.
+ * Licensed under the Open Software License version 3.0 (OSL-3.0), see LICENSE.txt.
+ */
+-->
+<!-- hyva_ handle: only applied on Hyvä themes -->
+<page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
+    <body>
+        <referenceContainer name="checkout.cart.form.before">
+            <block name="sps.quotation.quote.required.cart" template="SPS_QuotationHyva::quote-required/notice.phtml">
+                <arguments>
+                    <argument name="context" xsi:type="string">cart</argument>
+                </arguments>
+            </block>
+        </referenceContainer>
+    </body>
+</page>
