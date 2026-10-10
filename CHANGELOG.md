@@ -5,11 +5,6 @@ All notable changes to this project are documented here. The format follows
 
 ## [Unreleased]
 
-### Fixed
-- Street address: the request forms don't ask for it, so carts built from a quotation had an empty street. The
-  street is now taken from the checkout address or a saved address of the customer with the same country + postal
-  code — when the request is made (shown in the admin) and, as a fallback, when the quotation link builds the cart.
-
 ### Changed
 - Admin editor: the price column is "Special Price (optional)" — empty quotes the item's catalog price (the price
   the customer saw, incl. special prices; shown as the placeholder and used in the row total), so a freight-only

@@ -50,8 +50,7 @@ class RequestService
         private readonly CollectionFactory $collectionFactory,
         private readonly QuotationCartResolver $cartResolver,
         private readonly ProductConfiguration $productConfiguration,
-        private readonly TimezoneInterface $timezone,
-        private readonly KnownStreet $knownStreet
+        private readonly TimezoneInterface $timezone
     ) {
     }
 
@@ -95,7 +94,7 @@ class RequestService
             $quotation = $this->newQuotation($storeId, QuotationInterface::SOURCE_PRODUCT);
             $quotation->setItems([$item]);
         }
-        return $this->finish($quotation, $contact, $customerId, $merged, (string) __('product page'), null);
+        return $this->finish($quotation, $contact, $customerId, $merged, (string) __('product page'));
     }
 
     /**
@@ -157,7 +156,7 @@ class RequestService
         $quotation->setItems($items);                    // the cart is the complete, current picture
         $quotation->setData(QuotationInterface::SOURCE, QuotationInterface::SOURCE_CART);
         $quotation->setData(QuotationInterface::SOURCE_QUOTE_ID, (int) $cart->getId());
-        return $this->finish($quotation, $contact, $customerId, $merged, (string) __('cart'), $cart);
+        return $this->finish($quotation, $contact, $customerId, $merged, (string) __('cart'));
     }
 
     /**
@@ -208,25 +207,11 @@ class RequestService
         array $contact,
         ?int $customerId,
         bool $merged,
-        string $from,
-        ?Quote $cart
+        string $from
     ): QuotationInterface {
         $message = (string) $contact[QuotationInterface::CUSTOMER_MESSAGE];
         unset($contact[QuotationInterface::CUSTOMER_MESSAGE]);
-        $sameDestination = $quotation->getId()
-            && strtoupper((string) $quotation->getData(QuotationInterface::DEST_COUNTRY_ID)) === $contact[QuotationInterface::DEST_COUNTRY_ID]
-            && strtoupper((string) $quotation->getData(QuotationInterface::DEST_POSTCODE)) === $contact[QuotationInterface::DEST_POSTCODE];
         $quotation->addData($contact);                  // the newest contact and destination details win
-        // street: not asked by the form; known from the checkout address or a saved customer address
-        $street = $this->knownStreet->find(
-            (string) $contact[QuotationInterface::DEST_COUNTRY_ID],
-            (string) $contact[QuotationInterface::DEST_POSTCODE],
-            $cart,
-            $customerId
-        );
-        if ($street !== '' || !$sameDestination) {
-            $quotation->setData(QuotationInterface::DEST_STREET, $street !== '' ? $street : null);
-        }
         if ($customerId) {
             $quotation->setData(QuotationInterface::CUSTOMER_ID, $customerId);
         }

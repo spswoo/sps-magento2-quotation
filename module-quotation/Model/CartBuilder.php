@@ -34,8 +34,7 @@ class CartBuilder
         private readonly CustomerRepositoryInterface $customerRepository,
         private readonly StoreManagerInterface $storeManager,
         private readonly QuotationCartResolver $resolver,
-        private readonly \SPS\Quotation\Api\QuotationRepositoryInterface $repository,
-        private readonly KnownStreet $knownStreet
+        private readonly \SPS\Quotation\Api\QuotationRepositoryInterface $repository
     ) {
     }
 
@@ -87,14 +86,6 @@ class CartBuilder
         }
 
         $address = $this->addressData($quotation);
-        $accountId = $customerId ?: ($quotation->getCustomerId() ?: null);
-        if ($address['street'] === [''] && $accountId) {
-            // e.g. requested before the street was recorded: the account's saved address for this destination
-            $known = $this->knownStreet->find($address['country_id'], $address['postcode'], null, $accountId);
-            if ($known !== '') {
-                $address['street'] = explode("\n", $known);
-            }
-        }
         $quote->getBillingAddress()->addData($address);
         $quote->getShippingAddress()->addData($address);
         $this->cartRepository->save($quote);
