@@ -5,6 +5,10 @@ All notable changes to this project are documented here. The format follows
 
 ## [Unreleased]
 
+### Changed
+- Admin editor: quoted unit prices are pre-filled with the item's catalog price (the price the customer saw, incl.
+  special prices), so a freight-only quotation needs no price entry; an empty price saves as the catalog price.
+
 ### Added (cart quotes)
 - "Request a quote for my cart" on the cart page and in the Hyvä Checkout shipping step when the cart holds a
   quote-required product: one request for everything in the cart (quantities, custom options and other product

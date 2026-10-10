@@ -113,14 +113,15 @@ class FormHandler
             }
             /** @var QuotationItem $item */
             $item = $this->itemFactory->create();
-            $original = $this->amount($row['original_price'] ?? null);
+            $original = $this->amount($row['original_price'] ?? null) ?? (float) $product->getFinalPrice($qty);
             $item->addData([
                 'product_id' => $productId,
                 'sku' => (string) $product->getSku(),
                 'name' => (string) $product->getName(),
                 'qty' => $qty,
-                'original_price' => $original ?? (float) $product->getFinalPrice($qty),
-                'price' => $this->amount($row['price'] ?? null),
+                'original_price' => $original,
+                // no quoted price entered → the catalog price (only the freight is being quoted)
+                'price' => $this->amount($row['price'] ?? null) ?? $original,
             ]);
             $options = is_array($row['options'] ?? null) ? $row['options'] : [];
             // configuration the editor doesn't edit (e.g. from a cart request) is passed through unchanged

@@ -194,6 +194,7 @@ $field = static fn(string $name): string => 'quotation[' . $name . ']';
             </thead>
             <tbody></tbody>
         </table>
+        <div class="admin__field-note"><?= $e->escapeHtml(__('Quoted unit prices start at the catalog price the customer saw (incl. special prices). Change a price only to offer a different one; an empty price uses the catalog price.')) ?></div>
         <?php if (!$locked): ?>
             <div class="sps-q-search">
                 <label class="admin__field-label" for="sps-q-search-input"><span><?= $e->escapeHtml(__('Add product')) ?></span></label>
@@ -349,7 +350,9 @@ $script = <<<JS
         qty.appendChild(el('input', { class: 'admin__control-text qty', name: prefix + '[qty]', value: String(item.qty ?? 1), inputmode: 'decimal', required: true }));
         const catalog = el('td', {}, item.original_price !== null && item.original_price !== undefined ? money(parseFloat(item.original_price)) : '');
         const price = el('td');
-        price.appendChild(el('input', { class: 'admin__control-text price', name: prefix + '[price]', value: item.price === null || item.price === undefined ? '' : money(parseFloat(item.price)), inputmode: 'decimal' }));
+        // pre-filled with the catalog price (the price the customer saw): change it only for a special price
+        const quoted = item.price ?? item.original_price;
+        price.appendChild(el('input', { class: 'admin__control-text price', name: prefix + '[price]', value: quoted === null || quoted === undefined ? '' : money(parseFloat(quoted)), inputmode: 'decimal' }));
         const total = el('td', { class: 'row-total' });
         const actions = el('td');
         if (!cfg.locked) {
