@@ -10,11 +10,14 @@ namespace SPS\Quotation\Block\Email;
 use Magento\Framework\Pricing\PriceCurrencyInterface;
 use Magento\Framework\View\Element\Template;
 use SPS\Quotation\Api\Data\QuotationInterface;
+use SPS\Quotation\Api\QuotationRepositoryInterface;
 use SPS\Quotation\Model\ItemOptions;
 use SPS\Quotation\Model\QuotationItem;
 
 /**
- * Item table in quotation e-mails: {{layout handle="sps_quotation_email_items" quotation=$quotation}}.
+ * Item table in quotation e-mails: {{layout handle="sps_quotation_email_items" quotation_id=$quotation.entity_id}}.
+ * Magento's strict template mode only passes scalars to layout directives (objects arrive as null), so the e-mails
+ * pass the id and the quotation is loaded here (repository = layout argument "quotation_repository").
  */
 class Items extends Template
 {
@@ -35,7 +38,10 @@ class Items extends Template
      */
     public function getRows(): array
     {
-        $quotation = $this->getData('quotation');
+        if ($this->hasData('sps_rows')) {
+            return $this->getData('sps_rows');
+        }
+        $quotation = $this->loadQuotation();
         if (!$quotation instanceof QuotationInterface) {
             return [];
         }
@@ -56,7 +62,28 @@ class Items extends Template
                 'row_total' => $priced ? $this->format($quotation, $item->getRowTotal()) : '',
             ];
         }
+        $this->setData('sps_rows', $rows);
         return $rows;
+    }
+
+    private function loadQuotation(): ?QuotationInterface
+    {
+        $quotation = $this->getData('quotation');
+        if ($quotation instanceof QuotationInterface) {
+            return $quotation;
+        }
+        $id = (int) $this->getData('quotation_id');
+        $repository = $this->getData('quotation_repository');
+        if ($id <= 0 || !$repository instanceof QuotationRepositoryInterface) {
+            return null;
+        }
+        try {
+            $quotation = $repository->getById($id);
+        } catch (\Throwable) {
+            return null;
+        }
+        $this->setData('quotation', $quotation);
+        return $quotation;
     }
 
     public function hasPrices(): bool

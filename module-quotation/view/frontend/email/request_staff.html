@@ -10,7 +10,7 @@
 "var destination":"Destination",
 "var customer_message":"Customer message",
 "var admin_url":"Admin link",
-"layout handle=\"sps_quotation_email_items\" quotation=$quotation":"Items"
+"layout handle=\"sps_quotation_email_items\" quotation_id=$quotation.entity_id":"Items"
 } @-->
 {{template config_path="design/email/header_template"}}
 
@@ -24,7 +24,7 @@
     {{depend quotation.customer_company}}<tr><th align="left" style="padding-right: 12px;">{{trans "Company"}}</th><td>{{var quotation.customer_company}}</td></tr>{{/depend}}
     <tr><th align="left" style="padding-right: 12px;">{{trans "Ship to"}}</th><td>{{var destination}}</td></tr>
 </table>
-{{layout handle="sps_quotation_email_items" quotation=$quotation area="frontend"}}
+{{layout handle="sps_quotation_email_items" quotation_id=$quotation.entity_id area="frontend"}}
 {{depend customer_message}}
 <p><strong>{{trans "Message"}}</strong><br>{{var customer_message|escape|nl2br}}</p>
 {{/depend}}

@@ -10,13 +10,13 @@
 "var grand_total":"Estimated total",
 "var expires":"Valid until",
 "var checkout_url":"Checkout link",
-"layout handle=\"sps_quotation_email_items\" quotation=$quotation":"Items"
+"layout handle=\"sps_quotation_email_items\" quotation_id=$quotation.entity_id":"Items"
 } @-->
 {{template config_path="design/email/header_template"}}
 
 <p class="greeting">{{trans "Hello %name," name=$customer_name}}</p>
 <p>{{trans "A reminder that your quotation %number is reserved for you until %date. Use the button below to review and pay — this link replaces the one in our earlier e-mail." number=$quotation_number date=$expires}}</p>
-{{layout handle="sps_quotation_email_items" quotation=$quotation area="frontend"}}
+{{layout handle="sps_quotation_email_items" quotation_id=$quotation.entity_id area="frontend"}}
 <table class="sps-quotation-totals" style="margin: 0 0 20px auto;">
     <tr><td style="padding-right: 16px;">{{trans "Subtotal"}}</td><td align="right">{{var subtotal}}</td></tr>
     <tr><td style="padding-right: 16px;">{{var freight_label}} ({{var destination}})</td><td align="right">{{var freight}}</td></tr>

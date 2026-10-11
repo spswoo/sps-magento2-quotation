@@ -4,7 +4,7 @@
 "var customer_name":"Customer name",
 "var destination":"Destination",
 "var is_update":"Request was updated",
-"layout handle=\"sps_quotation_email_items\" quotation=$quotation":"Items"
+"layout handle=\"sps_quotation_email_items\" quotation_id=$quotation.entity_id":"Items"
 } @-->
 {{template config_path="design/email/header_template"}}
 
@@ -15,6 +15,6 @@
 <p>{{trans "Thank you for your request. Our team will calculate the shipping and e-mail you a quotation you can pay online."}}</p>
 {{/if}}
 <p>{{trans "Request number: %number" number=$quotation_number}}<br>{{trans "Ship to: %destination" destination=$destination}}</p>
-{{layout handle="sps_quotation_email_items" quotation=$quotation area="frontend"}}
+{{layout handle="sps_quotation_email_items" quotation_id=$quotation.entity_id area="frontend"}}
 
 {{template config_path="design/email/footer_template"}}
