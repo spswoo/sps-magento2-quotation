@@ -19,7 +19,7 @@ use SPS\Quotation\Api\Data\QuotationInterface;
 /**
  * Quotation e-mails (Stores > Configuration > Sales > Quotations > E-mails). Templates get:
  * quotation, store, customer_name, quotation_number, totals (formatted), expires (formatted date), checkout_url,
- * admin_url, and render the item table with {{layout handle="sps_quotation_email_items" quotation=$quotation}}.
+ * admin_url, and render the item table with {{layout handle="sps_quotation_email_items" quotation_id=$quotation.entity_id}}.
  */
 class EmailSender
 {

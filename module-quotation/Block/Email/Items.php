@@ -17,7 +17,7 @@ use SPS\Quotation\Model\QuotationItem;
 /**
  * Item table in quotation e-mails: {{layout handle="sps_quotation_email_items" quotation_id=$quotation.entity_id}}.
  * Magento's strict template mode only passes scalars to layout directives (objects arrive as null), so the e-mails
- * pass the id and the quotation is loaded here (repository = layout argument "quotation_repository").
+ * pass the id and the quotation is loaded here.
  */
 class Items extends Template
 {
@@ -73,12 +73,15 @@ class Items extends Template
             return $quotation;
         }
         $id = (int) $this->getData('quotation_id');
-        $repository = $this->getData('quotation_repository');
-        if ($id <= 0 || !$repository instanceof QuotationRepositoryInterface) {
+        if ($id <= 0) {
             return null;
         }
         try {
-            $quotation = $repository->getById($id);
+            // TODO(next deploy): inject QuotationRepositoryInterface in the constructor. Fetched here so the fix could
+            // ship as a compile-free hotfix (layout object arguments must be view models, so not passed via XML).
+            $quotation = \Magento\Framework\App\ObjectManager::getInstance()
+                ->get(QuotationRepositoryInterface::class)
+                ->getById($id);
         } catch (\Throwable) {
             return null;
         }

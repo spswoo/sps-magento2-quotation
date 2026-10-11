@@ -8,10 +8,6 @@
 <page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" label="Quotation e-mail items" design_abstraction="custom" xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
     <body>
         <!-- e-mail templates pass quotation_id (strict template mode drops objects); the block loads it -->
-        <block class="SPS\Quotation\Block\Email\Items" name="sps.quotation.email.items" cacheable="false">
-            <arguments>
-                <argument name="quotation_repository" xsi:type="object">SPS\Quotation\Api\QuotationRepositoryInterface</argument>
-            </arguments>
-        </block>
+        <block class="SPS\Quotation\Block\Email\Items" name="sps.quotation.email.items" cacheable="false"/>
     </body>
 </page>
