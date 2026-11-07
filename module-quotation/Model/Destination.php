@@ -17,7 +17,8 @@ class Destination
 {
     public function normalizePostcode(?string $country, ?string $postcode): string
     {
-        $value = strtoupper((string) preg_replace('/[\s\-]+/', '', (string) $postcode));
+        // letters and digits only: saved addresses contain typos like "B4E3N8. " that must still match "B4E 3N8"
+        $value = strtoupper((string) preg_replace('/[^A-Za-z0-9]+/', '', (string) $postcode));
         if (strtoupper((string) $country) === 'US') {
             $value = substr($value, 0, 5);
         }

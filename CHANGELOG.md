@@ -5,6 +5,10 @@ All notable changes to this project are documented here. The format follows
 
 ## [Unreleased]
 
+### Fixed
+- Quoted-freight destination check: postcodes are compared on letters and digits only, so a saved address with
+  stray punctuation (e.g. "B4E3N8. ") still matches the quoted "B4E 3N8" and the quoted freight is offered at checkout.
+
 ### Changed
 - Admin editor: the price column is "Special Price (optional)" — empty quotes the item's catalog price (the price
   the customer saw, incl. special prices; shown as the placeholder and used in the row total), so a freight-only
